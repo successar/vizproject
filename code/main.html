@@ -1,0 +1,155 @@
+<html>
+    <head>
+        <title>Basic sigma.js example</title>
+        <style type="text/css">
+            body {
+                margin : 0px;
+            }
+            #container-1 {
+                padding : 10px;
+                width : 100%;
+                height : 100%;
+            }
+            #container-2 {
+                padding : 10px;
+                width : 100%;
+                height : 100%;
+            }
+        </style>
+        <script src="http://code.jquery.com/jquery.min.js"></script>
+        <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+        <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>        
+    </head>
+    <body>
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-2 col-sm-2 col-xs-2">
+                        <form>
+                            <label for="edgefilt">Edge Filter : </label>
+                            <input class="form-control" type="text" id="edgefilt"/>
+                            <button type="button" id="startForce">Start Force Layout</button>
+                            <button type="button" id="endForce">End Force Layout</button>                            
+                        </form>
+                        
+                    </div>
+                    <div class="col-md-5 col-sm-5 col-xs-5">
+                        <div class="row">
+                            <form>
+                                <div class="form-group">
+                                    <label for="year-begin-1">Begin year : </label>
+                                    <input class="form-control" type="text" id="year-begin-1"/>
+                                </div>
+                                <div class="form-group">                                        
+                                    <label for="year-end-1">End year : </label>
+                                    <input class="form-control" type="text" id="year-end-1"/>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="row">
+                            <div id="container-1"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-5 col-sm-5 col-xs-5">
+                        <div class="row">
+                            <form>
+                                <div class="form-group">
+                                    <label for="year-begin-1">Begin year : </label>
+                                    <input class="form-control" type="text" id="year-begin-1"/>
+                                </div>
+                                <div class="form-group">                                        
+                                    <label for="year-end-1">End year : </label>
+                                    <input class="form-control" type="text" id="year-end-1"/>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="row">
+                            <div id="container-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <script src="https://d3js.org/d3.v4.min.js"></script>
+            <script src="../sigma.js/build/sigma.min.js"></script>
+            <script src="../sigma.js/build/plugins/sigma.layout.forceAtlas2.min.js"></script>
+            <script src="../sigma.js/build/plugins/sigma.plugins.filter.js"></script>
+            <script>                
+                var sigmaplot = function(graph, container_name, color, remove_edges) {
+                    var nodes_list = graph['nodes'],
+                        edges_list = graph['edges'];
+
+                    var s = new sigma({
+                        settings : {
+                            drawLabels : false,
+                            minNodeSize : 0.1,
+                            maxNodeSize : 4
+                        }
+                    });
+                    
+                    s.graph.read({
+                        nodes: nodes_list,
+                        edges: edges_list
+                    });
+                    
+                    
+                    var filter = new sigma.plugins.filter(s);
+                    filter.edgesBy(function(e) {
+                        return e.weight > 100;
+                    }, 'edgefilt').apply();
+
+                    console.log(
+                        s.graph.nodes().length,
+                        s.graph.edges().length
+                    );
+
+                    s.graph.nodes().forEach(function(node, i, a) {
+                        node.x = Math.cos(Math.PI * 2 * i / a.length);
+                        node.y = Math.sin(Math.PI * 2 * i / a.length);
+                        node.size = 2;
+                        node.color= color;
+                        node.label = node.id;
+                    });
+
+                    s.graph.edges().forEach(function(node, i, a){
+                        node.color = '#000';
+                    });
+
+                    s.addRenderer({
+                        type : 'webgl',
+                        container : container_name
+                    });
+                    
+                    console.log(s);
+                    s.refresh();
+
+                    var updateEdges = function() {
+                        var val = parseInt(document.getElementById('edgefilt').value);
+                        filter.undo('edgefilt').edgesBy(function(e) {
+                            return e.weight > val;
+                        }, 'edgefilt').apply();
+                    }
+
+                    var edgefilt = document.getElementById('edgefilt');
+                    edgefilt.addEventListener('input', updateEdges);
+
+                    document.getElementById('startForce').addEventListener('click', function(e) {
+                        s.startForceAtlas2();
+                    });
+                    document.getElementById('endForce').addEventListener('click', function(e) {
+                        s.stopForceAtlas2();
+                    });
+                };
+
+                d3.json("1840-45.json", function(data){
+                    sigmaplot(data, "container-1", "#0f0", false);
+                });
+
+                d3.json("1842.json", function(data){
+                    sigmaplot(data, "container-2", "#f00", true);
+                });
+                
+                
+            </script>
+    </body>
+</html>
