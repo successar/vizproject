@@ -22,152 +22,181 @@
         <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>        
     </head>
     <body>
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-2 col-sm-2 col-xs-2">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-2 col-sm-2 col-xs-2">
+                    <form>
+                        <label for="edgefilt">Edge Filter : </label>
+                        <input class="form-control" type="text" id="edgefilt"/>
+                        <button type="button" id="startForce">Start Force Layout</button>
+                        <button type="button" id="endForce">End Force Layout</button>  
+                        <button type="button" id="resetLayout">Reset Circular Layout</button>  
+                        <button type="button" id="edgeWeight">Show Edge Weights</button>   
+                        <button type="button" id="nodeDegree">Show Node Degree</button>                             
+                    </form>
+                    
+                </div>
+                <div class="col-md-5 col-sm-5 col-xs-5">
+                    <div class="row">
                         <form>
-                            <label for="edgefilt">Edge Filter : </label>
-                            <input class="form-control" type="text" id="edgefilt"/>
-                            <button type="button" id="startForce">Start Force Layout</button>
-                            <button type="button" id="endForce">End Force Layout</button>  
-                            <button type="button" id="edgeWeight">Show Edge Weights</button>   
-                            <button type="button" id="nodeDegree">Show Node Degree</button>                             
+                            <div class="form-group">
+                                <label for="year-begin-1">Begin year : </label>
+                                <input class="form-control" type="text" id="year-begin-1"/>
+                            </div>
+                            <div class="form-group">                                        
+                                <label for="year-end-1">End year : </label>
+                                <input class="form-control" type="text" id="year-end-1"/>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" id="year-button-1">Update Graph</button>
+                            </div>
                         </form>
-                        
                     </div>
-                    <div class="col-md-5 col-sm-5 col-xs-5">
-                        <div class="row">
-                            <form>
-                                <div class="form-group">
-                                    <label for="year-begin-1">Begin year : </label>
-                                    <input class="form-control" type="text" id="year-begin-1"/>
-                                </div>
-                                <div class="form-group">                                        
-                                    <label for="year-end-1">End year : </label>
-                                    <input class="form-control" type="text" id="year-end-1"/>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="row">
-                            <div id="container-1"></div>
-                        </div>
+                    <div class="row">
+                        <div id="container-1"></div>
                     </div>
-                    <div class="col-md-5 col-sm-5 col-xs-5">
-                        <div class="row">
-                            <form>
-                                <div class="form-group">
-                                    <label for="year-begin-1">Begin year : </label>
-                                    <input class="form-control" type="text" id="year-begin-1"/>
+                </div>
+                <div class="col-md-5 col-sm-5 col-xs-5">
+                    <div class="row">
+                        <form>
+                            <div class="form-group">
+                                <label for="year-begin-2">Begin year : </label>
+                                <input class="form-control" type="text" id="year-begin-2"/>
+                            </div>
+                            <div class="form-group">                                        
+                                <label for="year-end-2">End year : </label>
+                                <input class="form-control" type="text" id="year-end-2"/>
+                            </div>
+                            <div class="form-group">
+                                    <button type="button" id="year-button-2">Update Graph</button>
                                 </div>
-                                <div class="form-group">                                        
-                                    <label for="year-end-1">End year : </label>
-                                    <input class="form-control" type="text" id="year-end-1"/>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="row">
-                            <div id="container-2"></div>
-                        </div>
+                        </form>
+                    </div>
+                    <div class="row">
+                        <div id="container-2"></div>
                     </div>
                 </div>
             </div>
-            
-            <script src="https://d3js.org/d3.v4.min.js"></script>
-            <script src="../sigma.js/build/sigma.min.js"></script>
-            <script src="../sigma.js/build/plugins/sigma.layout.forceAtlas2.min.js"></script>
-            <script src="../sigma.js/build/plugins/sigma.plugins.filter.js"></script>
-            <script>                
-                var sigmaplot = function(graph, container_name, color, remove_edges) {
-                    var nodes_list = graph['nodes'],
-                        edges_list = graph['edges'];
-                    console.log(edges_list[0]);
-                    var s = new sigma({
-                        settings : {
-                            drawLabels : false,
-                            minNodeSize : 0.5,
-                            maxNodeSize : 8,
-                            minEdgeSize : 0,
-                            maxEdgeSize : 8
-                        }
-                    });
-                    
-                    s.graph.read({
-                        nodes: nodes_list,
-                        edges: edges_list
-                    });
-                    
-                    
-                    var filter = new sigma.plugins.filter(s);
-                    filter.edgesBy(function(e) {
-                        return e.weight > 100;
+        </div>
+        
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        <script src="../sigma.js/build/sigma.min.js"></script>
+        <script src="../sigma.js/build/plugins/sigma.layout.forceAtlas2.min.js"></script>
+        <script src="../sigma.js/build/plugins/sigma.plugins.filter.js"></script>
+        <script>                
+            var sigmaplot = function(graph, container_name, color, remove_edges) {
+                var nodes_list = graph['nodes'],
+                    edges_list = graph['edges'];
+                console.log(edges_list[0]);
+                var s = new sigma({
+                    settings : {
+                        drawLabels : false,
+                        minNodeSize : 0.5,
+                        maxNodeSize : 8,
+                        minEdgeSize : 0,
+                        maxEdgeSize : 8
+                    }
+                });
+                
+                s.graph.read({
+                    nodes: nodes_list,
+                    edges: edges_list
+                });
+                
+                
+                var filter = new sigma.plugins.filter(s);
+                filter.edgesBy(function(e) {
+                    return e.weight > 100;
+                }, 'edgefilt').apply();
+
+                console.log(
+                    s.graph.nodes().length,
+                    s.graph.edges().length
+                );
+
+                s.graph.nodes().forEach(function(node, i, a) {
+                    node.x = Math.cos(Math.PI * 2 * i / a.length);
+                    node.y = Math.sin(Math.PI * 2 * i / a.length);
+                    node.color = color;
+                    node.size = 2;
+                    node.label = node.id;
+                });
+
+                s.graph.edges().forEach(function(node, i, a){
+                    node.color = '#000';
+                });
+
+                s.addRenderer({
+                    type : 'webgl',
+                    container : container_name
+                });
+                
+                console.log(s);
+                s.refresh();
+
+                var updateEdges = function() {
+                    var val = parseInt(document.getElementById('edgefilt').value);
+                    filter.undo('edgefilt').edgesBy(function(e) {
+                        return e.weight > val;
                     }, 'edgefilt').apply();
+                }
 
-                    console.log(
-                        s.graph.nodes().length,
-                        s.graph.edges().length
-                    );
+                var edgefilt = document.getElementById('edgefilt');
+                edgefilt.addEventListener('input', updateEdges);
 
+                document.getElementById('startForce').addEventListener('click', function(e) {
+                    s.startForceAtlas2();
+                });
+                document.getElementById('endForce').addEventListener('click', function(e) {
+                    s.stopForceAtlas2();
+                });
+
+                document.getElementById('resetLayout').addEventListener('click', function(e) {
                     s.graph.nodes().forEach(function(node, i, a) {
                         node.x = Math.cos(Math.PI * 2 * i / a.length);
                         node.y = Math.sin(Math.PI * 2 * i / a.length);
-                        node.color = color;
-                        node.size = 2;
-                        node.label = node.id;
                     });
-
-                    s.graph.edges().forEach(function(node, i, a){
-                        node.color = '#000';
-                    });
-
-                    s.addRenderer({
-                        type : 'webgl',
-                        container : container_name
-                    });
-                    
-                    console.log(s);
                     s.refresh();
+                });
 
-                    var updateEdges = function() {
-                        var val = parseInt(document.getElementById('edgefilt').value);
-                        filter.undo('edgefilt').edgesBy(function(e) {
-                            return e.weight > val;
-                        }, 'edgefilt').apply();
-                    }
-
-                    var edgefilt = document.getElementById('edgefilt');
-                    edgefilt.addEventListener('input', updateEdges);
-
-                    document.getElementById('startForce').addEventListener('click', function(e) {
-                        s.startForceAtlas2();
-                    });
-                    document.getElementById('endForce').addEventListener('click', function(e) {
-                        s.stopForceAtlas2();
-                    });
-
-                    document.getElementById('edgeWeight').addEventListener('click', function(e){
-                            s.graph.edges().forEach(function(edge, i, a){
-                                edge.size = edge.weight;
-                            });
-                            s.refresh();
-                    });
-
-                    document.getElementById('nodeDegree').addEventListener('click', function(e){
-                        s.graph.nodes().forEach(function(node, i, a) {
-                            node.size = s.graph.degree(node.id);
+                document.getElementById('edgeWeight').addEventListener('click', function(e){
+                        s.graph.edges().forEach(function(edge, i, a){
+                            edge.size = edge.weight;
                         });
                         s.refresh();
-                    });
-                };
+                });
 
-                d3.json("1840-45.json", function(data){
+                document.getElementById('nodeDegree').addEventListener('click', function(e){
+                    s.graph.nodes().forEach(function(node, i, a) {
+                        node.size = s.graph.degree(node.id);
+                    });
+                    s.refresh();
+                });
+            };
+
+            // d3.json("1840-45.json", function(data){
+            //     sigmaplot(data, "container-1", "#0f0", false);
+            // });
+
+            // d3.json("1842.json", function(data){
+            //     sigmaplot(data, "container-2", "#f00", true);
+            // });
+            
+            document.getElementById('year-button-1').addEventListener('click', function(e){
+                var y1 = document.getElementById('year-begin-1').value;
+                var y2 = document.getElementById('year-end-1').value;
+                d3.json(y1+"-"+y2+".json", function(data) {
                     sigmaplot(data, "container-1", "#0f0", false);
                 });
+            });
 
-                d3.json("1842.json", function(data){
-                    sigmaplot(data, "container-2", "#f00", true);
+            document.getElementById('year-button-2').addEventListener('click', function(e){
+                var y1 = document.getElementById('year-begin-2').value;
+                var y2 = document.getElementById('year-end-2').value;
+                d3.json(y1+"-"+y2+".json", function(data) {
+                    sigmaplot(data, "container-2", "#f00", false);
                 });
-                
-                
-            </script>
+            });
+        </script>
     </body>
 </html>
