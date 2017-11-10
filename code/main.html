@@ -29,7 +29,9 @@
                             <label for="edgefilt">Edge Filter : </label>
                             <input class="form-control" type="text" id="edgefilt"/>
                             <button type="button" id="startForce">Start Force Layout</button>
-                            <button type="button" id="endForce">End Force Layout</button>                            
+                            <button type="button" id="endForce">End Force Layout</button>  
+                            <button type="button" id="edgeWeight">Show Edge Weights</button>   
+                            <button type="button" id="nodeDegree">Show Node Degree</button>                             
                         </form>
                         
                     </div>
@@ -78,12 +80,14 @@
                 var sigmaplot = function(graph, container_name, color, remove_edges) {
                     var nodes_list = graph['nodes'],
                         edges_list = graph['edges'];
-
+                    console.log(edges_list[0]);
                     var s = new sigma({
                         settings : {
                             drawLabels : false,
-                            minNodeSize : 0.1,
-                            maxNodeSize : 4
+                            minNodeSize : 0.5,
+                            maxNodeSize : 8,
+                            minEdgeSize : 0,
+                            maxEdgeSize : 8
                         }
                     });
                     
@@ -106,8 +110,8 @@
                     s.graph.nodes().forEach(function(node, i, a) {
                         node.x = Math.cos(Math.PI * 2 * i / a.length);
                         node.y = Math.sin(Math.PI * 2 * i / a.length);
+                        node.color = color;
                         node.size = 2;
-                        node.color= color;
                         node.label = node.id;
                     });
 
@@ -138,6 +142,20 @@
                     });
                     document.getElementById('endForce').addEventListener('click', function(e) {
                         s.stopForceAtlas2();
+                    });
+
+                    document.getElementById('edgeWeight').addEventListener('click', function(e){
+                            s.graph.edges().forEach(function(edge, i, a){
+                                edge.size = edge.weight;
+                            });
+                            s.refresh();
+                    });
+
+                    document.getElementById('nodeDegree').addEventListener('click', function(e){
+                        s.graph.nodes().forEach(function(node, i, a) {
+                            node.size = s.graph.degree(node.id);
+                        });
+                        s.refresh();
                     });
                 };
 
