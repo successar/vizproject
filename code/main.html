@@ -27,7 +27,7 @@
                 <div class="col-md-2 col-sm-2 col-xs-2">
                     <form>
                         <label for="edgefilt">Edge Filter : </label>
-                        <input class="form-control" type="text" id="edgefilt"/>
+                        <input class="form-control" type="text" id="edgefilt" value="100"/>
                         <button type="button" id="startForce">Start Force Layout</button>
                         <button type="button" id="endForce">End Force Layout</button>  
                         <button type="button" id="resetLayout">Reset Circular Layout</button>  
@@ -83,12 +83,9 @@
         <script src="../sigma.js/build/sigma.min.js"></script>
         <script src="../sigma.js/build/plugins/sigma.layout.forceAtlas2.min.js"></script>
         <script src="../sigma.js/build/plugins/sigma.plugins.filter.js"></script>
-        <script>                
-            var sigmaplot = function(graph, container_name, color, remove_edges) {
-                var nodes_list = graph['nodes'],
-                    edges_list = graph['edges'];
-                console.log(edges_list[0]);
-                var s = new sigma({
+        <script src="../sigma.js/build/plugins/sigma.layout.noverlap.min.js"></script>
+        <script>   
+            var s1 = new sigma({
                     settings : {
                         drawLabels : false,
                         minNodeSize : 0.5,
@@ -96,7 +93,29 @@
                         minEdgeSize : 0,
                         maxEdgeSize : 8
                     }
-                });
+                }); 
+            var s2 = new sigma({
+                    settings : {
+                        drawLabels : false,
+                        minNodeSize : 0.5,
+                        maxNodeSize : 8,
+                        minEdgeSize : 0,
+                        maxEdgeSize : 8
+                    }
+                });            
+            var sigmaplot = function(graph, container_name, color, remove_edges) {
+                var nodes_list = graph['nodes'],
+                    edges_list = graph['edges'];
+                console.log(edges_list[0]);
+                var s, so;
+                if (remove_edges) {
+                    s = s1;
+                    so = s2;
+                }
+                else {
+                    s = s2;
+                    so = s1;
+                }
                 
                 s.graph.read({
                     nodes: nodes_list,
@@ -122,12 +141,13 @@
                     node.label = node.id;
                 });
 
-                s.graph.edges().forEach(function(node, i, a){
-                    node.color = '#000';
+                s.graph.edges().forEach(function(edge, i, a){
+                    edge.color = '#000';
+                    edge.type = "curve";
                 });
 
                 s.addRenderer({
-                    type : 'webgl',
+                    type : 'canvas',
                     container : container_name
                 });
                 
@@ -149,6 +169,7 @@
                 });
                 document.getElementById('endForce').addEventListener('click', function(e) {
                     s.stopForceAtlas2();
+                    s.startNoverlap();
                 });
 
                 document.getElementById('resetLayout').addEventListener('click', function(e) {
@@ -172,21 +193,24 @@
                     });
                     s.refresh();
                 });
+
+                s.bind("clickNode", function(node){
+                    console.log(node.data.node);
+                    so.graph.nodes().forEach(function(node1, i, a){
+                        if (node1.id == node.data.node.id) {
+                            console.log(node1);
+                            node1.size = 8;
+                        }
+                    });
+                    so.refresh();
+                });
             };
 
-            // d3.json("1840-45.json", function(data){
-            //     sigmaplot(data, "container-1", "#0f0", false);
-            // });
-
-            // d3.json("1842.json", function(data){
-            //     sigmaplot(data, "container-2", "#f00", true);
-            // });
-            
             document.getElementById('year-button-1').addEventListener('click', function(e){
                 var y1 = document.getElementById('year-begin-1').value;
                 var y2 = document.getElementById('year-end-1').value;
                 d3.json(y1+"-"+y2+".json", function(data) {
-                    sigmaplot(data, "container-1", "#0f0", false);
+                    sigmaplot(data, "container-1", "#0f0", true);
                 });
             });
 
