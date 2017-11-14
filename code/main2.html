@@ -36,8 +36,9 @@
                     </form>
                     
                 </div>
-                <div class="col-md-5 col-sm-5 col-xs-5">
+                <div class="col-md-10 col-sm-10 col-xs-10">
                     <div class="row">
+                        <div class="col-md-5 col-sm-5 col-xs-5">
                         <form>
                             <div class="form-group">
                                 <label for="year-begin-1">Begin year : </label>
@@ -51,13 +52,9 @@
                                 <button type="button" id="year-button-1">Update Graph</button>
                             </div>
                         </form>
-                    </div>
-                    <div class="row">
-                        <div id="container-1"></div>
-                    </div>
-                </div>
-                <div class="col-md-5 col-sm-5 col-xs-5">
-                    <div class="row">
+                        </div>
+                        <div class="col-md-5 col-sm-5 col-xs-5">
+                                
                         <form>
                             <div class="form-group">
                                 <label for="year-begin-2">Begin year : </label>
@@ -67,13 +64,12 @@
                                 <label for="year-end-2">End year : </label>
                                 <input class="form-control" type="text" id="year-end-2"/>
                             </div>
-                            <div class="form-group">
-                                    <button type="button" id="year-button-2">Update Graph</button>
-                                </div>
                         </form>
                     </div>
+                    
+                    </div>
                     <div class="row">
-                        <div id="container-2"></div>
+                        <div id="container-1"></div>
                     </div>
                 </div>
             </div>
@@ -107,16 +103,7 @@
 
                 return edges;
             });
-            var s1 = new sigma({
-                    settings : {
-                        drawLabels : false,
-                        minNodeSize : 1,
-                        maxNodeSize : 8,
-                        minEdgeSize : 0,
-                        maxEdgeSize : 8
-                    }
-                }); 
-            var s2 = new sigma({
+            var s = new sigma({
                     settings : {
                         drawLabels : false,
                         minNodeSize : 1,
@@ -128,16 +115,7 @@
             var sigmaplot = function(graph, container_name, color, remove_edges) {
                 var nodes_list = graph['nodes'],
                     edges_list = graph['edges'];
-                var s, so;
-                if (remove_edges) {
-                    s = s1;
-                    so = s2;
-                }
-                else {
-                    s = s2;
-                    so = s1;
-                }
-                
+
                 s.graph.read({
                     nodes: nodes_list,
                     edges: edges_list
@@ -159,6 +137,8 @@
                     node.y = Math.sin(Math.PI * 2 * i / a.length);
                     node.color = color;
                     node.size = 8;
+                    //node.label = node.id;
+                    node.clicked = 0;
                 });
 
                 s.graph.edges().forEach(function(edge, i, a){
@@ -227,11 +207,6 @@
                         }
                     });
                     s.refresh();
-                    if ('recurse' in node.data){ return; }
-
-                    if(typeof so.graph.nodes(node.data.node.id) == 'undefined') {return;}
-                    so.renderers[0].dispatchEvent('overNode', {node : so.graph.nodes(node.data.node.id), recurse : false});
-                    
                 });
                 
                 s.bind("outNode", function(node) {
@@ -249,13 +224,38 @@
                         }
                     });
                     s.refresh();
-                    if('recurse' in node.data) { return; }
-                    if(typeof so.graph.nodes(node.data.node.id) == 'undefined') {return;}
-
-                    so.renderers[0].dispatchEvent('outNode', {node : so.graph.nodes(node.data.node.id), recurse : false});
-                    
                 });
             };
+
+            var compute_union = function(graph_1, graph_2) {
+                nodes_1 = graph_1['nodes'];
+                nodes_2 = graph_2['nodes'];
+                var nodes = {};
+                for(var node in nodes_1) {
+                    node = nodes_1[node];
+                    nodes[node['id']] = node;
+                }
+                for(var node in nodes_2) {
+                    node = nodes_2[node];
+                    nodes[node['id']] = node;
+                }
+                var values = $.map(nodes, function(value, key) { return value });
+
+                var edges = {};
+                for(var edge in graph_1['edges']) {
+                    edge = graph_1['edges'][edge];
+                    edge['id'] = edge['id'] + '_1';
+                    edges[edge['id']] = edge;
+                }
+                for(var edge in graph_2['edges']) {
+                    edge = graph_2['edges'][edge];
+                    edge['id'] = edge['id'] + '_2';
+                    edges[edge['id']] = edge;
+                }
+
+                var edges = $.map(edges, function(value, key) { return value; });
+                return {'nodes' : values, 'edges' : edges};
+            }
 
             var append_meta_info = function(graph, meta_data) {
                 var nodes = graph['nodes'];
@@ -273,24 +273,19 @@
             document.getElementById('year-button-1').addEventListener('click', function(e){
                 var y1 = document.getElementById('year-begin-1').value;
                 var y2 = document.getElementById('year-end-1').value;
+                var y3 = document.getElementById('year-begin-2').value;
+                var y4 = document.getElementById('year-end-2').value;
                 d3.json("meta.json", function(meta_data){
-                    d3.json(y1+"-"+y2+".json", function(data) {
-                        append_meta_info(data, meta_data);
-                        sigmaplot(data, "container-1", "#0f0", true);
+                    d3.json(y1+"-"+y2+".json", function(g1) {
+                        d3.json(y3+"-"+y4+".json", function(g2) {
+                            graph = compute_union(g1, g2);
+                            append_meta_info(graph, meta_data);
+                            sigmaplot(graph, "container-1", "#0f0", true);
+                        });
                     });
                 });
             });
 
-            document.getElementById('year-button-2').addEventListener('click', function(e){
-                var y1 = document.getElementById('year-begin-2').value;
-                var y2 = document.getElementById('year-end-2').value;
-                d3.json("meta.json", function(meta_data){
-                    d3.json(y1+"-"+y2+".json", function(data) {
-                        append_meta_info(data, meta_data);
-                        sigmaplot(data, "container-2", "#f00", false);
-                    });
-                });
-            });
         </script>
     </body>
 </html>
