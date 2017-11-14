@@ -84,11 +84,33 @@
         <script src="../sigma.js/build/plugins/sigma.layout.forceAtlas2.min.js"></script>
         <script src="../sigma.js/build/plugins/sigma.plugins.filter.js"></script>
         <script src="../sigma.js/build/plugins/sigma.layout.noverlap.min.js"></script>
-        <script>   
+        <script>  
+            sigma.classes.graph.addMethod('nodeEdges', function(node) {
+                var edges = {};
+                var nodes = {};
+                var n1 = this.inNeighborsIndex[node.id];
+                var n2 = this.outNeighborsIndex[node.id];
+                for(var n in n1) {
+                    nodes[n] = n;
+                    for (var e in n1[n]) {
+                        if(!n1[n][e].hidden) {
+                        edges[e] = n1[n][e]; }
+                    }
+                }
+                for(var n in n2) {
+                    nodes[n] = n;
+                    for (var e in n2[n]) {
+                        if(!n2[n][e].hidden) {
+                        edges[e] = n2[n][e]; }
+                    }
+                }
+
+                return edges;
+            });
             var s1 = new sigma({
                     settings : {
                         drawLabels : false,
-                        minNodeSize : 0.5,
+                        minNodeSize : 1,
                         maxNodeSize : 8,
                         minEdgeSize : 0,
                         maxEdgeSize : 8
@@ -97,7 +119,7 @@
             var s2 = new sigma({
                     settings : {
                         drawLabels : false,
-                        minNodeSize : 0.5,
+                        minNodeSize : 1,
                         maxNodeSize : 8,
                         minEdgeSize : 0,
                         maxEdgeSize : 8
@@ -137,12 +159,13 @@
                     node.x = Math.cos(Math.PI * 2 * i / a.length);
                     node.y = Math.sin(Math.PI * 2 * i / a.length);
                     node.color = color;
-                    node.size = 2;
+                    node.size = 8;
                     node.label = node.id;
+                    node.clicked = 0;
                 });
 
                 s.graph.edges().forEach(function(edge, i, a){
-                    edge.color = '#000';
+                    edge.color = '#ccc';
                     edge.type = "curve";
                 });
 
@@ -194,15 +217,48 @@
                     s.refresh();
                 });
 
-                s.bind("clickNode", function(node){
-                    console.log(node.data.node);
-                    so.graph.nodes().forEach(function(node1, i, a){
-                        if (node1.id == node.data.node.id) {
-                            console.log(node1);
-                            node1.size = 8;
+                s.bind("overNode", function(node){
+                    var neighbors = {};
+                    var edges = s.graph.nodeEdges(node.data.node);
+                    for(var e in edges) {
+                        e = edges[e];
+                        e.color = '#f00';
+                        neighbors[e.source] = 1;
+                        neighbors[e.target] = 1;
+                    }
+                    s.graph.nodes().forEach(function(node, i, a){
+                        if (neighbors[node.id]) {
+                            node.color = '#00f';
                         }
                     });
-                    so.refresh();
+                    s.refresh();
+                    if ('recurse' in node.data){ return; }
+
+                    if(typeof so.graph.nodes(node.data.node.id) == 'undefined') {return;}
+                    so.renderers[0].dispatchEvent('overNode', {node : so.graph.nodes(node.data.node.id), recurse : false});
+                    
+                });
+                
+                s.bind("outNode", function(node) {
+                    var neighbors = {};
+                    var edges = s.graph.nodeEdges(node.data.node);
+                    for(var e in edges) {
+                        e = edges[e];
+                        e.color = '#ccc';
+                        neighbors[e.source] = 1;
+                        neighbors[e.target] = 1;
+                    }
+                    s.graph.nodes().forEach(function(node, i, a){
+                        if (neighbors[node.id]) {
+                            node.color = color;
+                        }
+                    });
+                    s.refresh();
+                    if('recurse' in node.data) { return; }
+                    if(typeof so.graph.nodes(node.data.node.id) == 'undefined') {return;}
+
+                    so.renderers[0].dispatchEvent('outNode', {node : so.graph.nodes(node.data.node.id), recurse : false});
+                    
                 });
             };
 
