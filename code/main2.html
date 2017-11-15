@@ -106,8 +106,8 @@
             var s = new sigma({
                     settings : {
                         drawLabels : false,
-                        minNodeSize : 1,
-                        maxNodeSize : 8,
+                        minNodeSize : 2,
+                        maxNodeSize : 10,
                         minEdgeSize : 0,
                         maxEdgeSize : 8
                     }
@@ -187,7 +187,12 @@
 
                 document.getElementById('nodeDegree').addEventListener('click', function(e){
                     s.graph.nodes().forEach(function(node, i, a) {
-                        node.size = s.graph.degree(node.id);
+                        //node.size = s.graph.degree(node.id);
+                        var diff = node.betweenness_centrality_1 - node.betweenness_centrality_2;
+                        node.size = Math.abs(diff);
+                        if (Math.sign(diff) == -1) {
+                            node.color = '#f00';
+                        }
                     });
                     s.refresh();
                 });
@@ -233,11 +238,20 @@
                 var nodes = {};
                 for(var node in nodes_1) {
                     node = nodes_1[node];
+                    node.betweenness_centrality_1 = node.betweenness_centrality;
+                    node.betweenness_centrality_2 = 0;
                     nodes[node['id']] = node;
                 }
                 for(var node in nodes_2) {
                     node = nodes_2[node];
-                    nodes[node['id']] = node;
+                    if(node['id'] in nodes) {
+                        nodes[node['id']].betweenness_centrality_2 = node.betweenness_centrality;
+                    }
+                    else {
+                        nodes[node['id']] = node;
+                        nodes[node['id']].betweenness_centrality_1 = 0;
+                        nodes[node['id']].betweenness_centrality_2 = node.betweenness_centrality;
+                    }
                 }
                 var values = $.map(nodes, function(value, key) { return value });
 
@@ -276,8 +290,8 @@
                 var y3 = document.getElementById('year-begin-2').value;
                 var y4 = document.getElementById('year-end-2').value;
                 d3.json("meta.json", function(meta_data){
-                    d3.json(y1+"-"+y2+".json", function(g1) {
-                        d3.json(y3+"-"+y4+".json", function(g2) {
+                    d3.json(y1+"-"+y2+"_betweenness.json", function(g1) {
+                        d3.json(y3+"-"+y4+"_betweenness.json", function(g2) {
                             graph = compute_union(g1, g2);
                             append_meta_info(graph, meta_data);
                             sigmaplot(graph, "container-1", "#0f0", true);
