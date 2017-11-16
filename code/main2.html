@@ -26,13 +26,29 @@
             <div class="row">
                 <div class="col-md-2 col-sm-2 col-xs-2">
                     <form>
+                            <div class="form-group">
                         <label for="edgefilt">Edge Filter : </label>
                         <input class="form-control" type="text" id="edgefilt" value="100"/>
+                    </div>
+                        <div class="form-group">
                         <button type="button" id="startForce">Start Force Layout</button>
                         <button type="button" id="endForce">End Force Layout</button>  
                         <button type="button" id="resetLayout">Reset Circular Layout</button>  
+                    </div>
+                        <div class="form-group">
                         <button type="button" id="edgeWeight">Show Edge Weights</button>   
-                        <button type="button" id="nodeDegree">Show Node Degree</button>                             
+                        <button type="button" id="nodeDegree">Show Node Betweenness</button> 
+                    </div>  
+                        <div class="form-group">
+                        <select id="selectGroup">
+                            <option value="None">Choose a number</option>
+                        </select>
+                    </div>
+                        <div class="form-group">
+                        <label for="nodesearch">Search : </label>
+                        <input class="form-control" type="text" id="nodesearch" value=""/> 
+                        <button type="button" id="nodesearchbutton">Search Paper</button>
+                    </div>                        
                     </form>
                     
                 </div>
@@ -106,8 +122,8 @@
             var s = new sigma({
                     settings : {
                         drawLabels : false,
-                        minNodeSize : 1,
-                        maxNodeSize : 8,
+                        minNodeSize : 2,
+                        maxNodeSize : 10,
                         minEdgeSize : 0,
                         maxEdgeSize : 8
                     }
@@ -115,6 +131,22 @@
             var sigmaplot = function(graph, container_name, color, remove_edges) {
                 var nodes_list = graph['nodes'],
                     edges_list = graph['edges'];
+                var groups = {};
+                
+                for(var i = 0; i < nodes_list.length; i++) {
+                    var opt = nodes_list[i];
+                    opt.group = Math.floor(Math.random() * 10);
+                    groups[opt.group] = opt.group;
+                }
+
+                var select = document.getElementById("selectGroup");
+                for(var key in groups) {
+                    group = groups[key];
+                    var el = document.createElement("option");
+                    el.textContent = group;
+                    el.value = group;
+                    select.appendChild(el);
+                }
 
                 s.graph.read({
                     nodes: nodes_list,
@@ -125,7 +157,9 @@
                 var filter = new sigma.plugins.filter(s);
                 filter.edgesBy(function(e) {
                     return e.weight > 100;
-                }, 'edgefilt').apply();
+                }, 'edgefilt').nodesBy(function(n) {
+                    return true;
+                }, 'nodefilt').apply();
 
                 console.log(
                     s.graph.nodes().length,
@@ -136,8 +170,8 @@
                     node.x = Math.cos(Math.PI * 2 * i / a.length);
                     node.y = Math.sin(Math.PI * 2 * i / a.length);
                     node.color = color;
+                    node.orig_color = node.color;
                     node.size = 8;
-                    //node.label = node.id;
                     node.clicked = 0;
                 });
 
@@ -160,17 +194,16 @@
                     }, 'edgefilt').apply();
                 }
 
-                var edgefilt = document.getElementById('edgefilt');
-                edgefilt.addEventListener('input', updateEdges);
+                $('#edgefilt').on('input', updateEdges);
 
-                document.getElementById('startForce').addEventListener('click', function(e) {
+                $('#startForce').on('click', function(e) {
                     s.startForceAtlas2();
                 });
-                document.getElementById('endForce').addEventListener('click', function(e) {
+                $('#endForce').on('click', function(e) {
                     s.stopForceAtlas2();
                 });
 
-                document.getElementById('resetLayout').addEventListener('click', function(e) {
+                $('#resetLayout').on('click', function(e) {
                     s.graph.nodes().forEach(function(node, i, a) {
                         node.x = Math.cos(Math.PI * 2 * i / a.length);
                         node.y = Math.sin(Math.PI * 2 * i / a.length);
@@ -178,19 +211,54 @@
                     s.refresh();
                 });
 
-                document.getElementById('edgeWeight').addEventListener('click', function(e){
+                $('#edgeWeight').on('click', function(e){
                     s.graph.edges().forEach(function(edge, i, a){
                         edge.size = edge.weight;
                     });
                     s.refresh();
                 });
 
-                document.getElementById('nodeDegree').addEventListener('click', function(e){
+                $('#nodeDegree').on('click', function(e){
                     s.graph.nodes().forEach(function(node, i, a) {
-                        node.size = s.graph.degree(node.id);
+                        var diff = node.betweenness_centrality_2 - node.betweenness_centrality_1;
+                        node.size = Math.abs(diff);
+                        if (Math.sign(diff) == -1) {
+                            node.color = '#f00';
+                            node.orig_color = node.color;
+                        }
                     });
                     s.refresh();
                 });
+
+                $('#selectGroup').on('change', function (e) {
+                    var optionSelected = $("option:selected", this);
+                    var valueSelected = this.value;
+                    if (valueSelected == 'None') {
+                        filter.undo('nodefilt').nodesBy(function(n) {
+                            return true;
+                        }, 'nodefilt').apply();
+                    }
+                    else {
+                        filter.undo('nodefilt').nodesBy(function(n) {
+                            return n.group == valueSelected;
+                        }, 'nodefilt').apply();
+                    }
+                });
+
+                $('#nodesearchbutton').on('click', function(e){
+                    var val = document.getElementById('nodesearch').value;
+                    if (val == 'None') {
+                        filter.undo('nodefilt').nodesBy(function(n) {
+                            return true;
+                        }, 'nodefilt').apply();
+                    }
+                    else {
+                        filter.undo('nodefilt').nodesBy(function(n) {
+                            return n.label == val;
+                        }, 'nodefilt').apply();
+                    }
+                });
+
 
                 s.bind("overNode", function(node){
                     var neighbors = {};
@@ -220,7 +288,7 @@
                     }
                     s.graph.nodes().forEach(function(node, i, a){
                         if (neighbors[node.id]) {
-                            node.color = color;
+                            node.color = node.orig_color;
                         }
                     });
                     s.refresh();
@@ -233,11 +301,20 @@
                 var nodes = {};
                 for(var node in nodes_1) {
                     node = nodes_1[node];
+                    node.betweenness_centrality_1 = node.betweenness_centrality;
+                    node.betweenness_centrality_2 = 0;
                     nodes[node['id']] = node;
                 }
                 for(var node in nodes_2) {
                     node = nodes_2[node];
-                    nodes[node['id']] = node;
+                    if(node['id'] in nodes) {
+                        nodes[node['id']].betweenness_centrality_2 = node.betweenness_centrality;
+                    }
+                    else {
+                        nodes[node['id']] = node;
+                        nodes[node['id']].betweenness_centrality_1 = 0;
+                        nodes[node['id']].betweenness_centrality_2 = node.betweenness_centrality;
+                    }
                 }
                 var values = $.map(nodes, function(value, key) { return value });
 
@@ -276,8 +353,8 @@
                 var y3 = document.getElementById('year-begin-2').value;
                 var y4 = document.getElementById('year-end-2').value;
                 d3.json("meta.json", function(meta_data){
-                    d3.json(y1+"-"+y2+".json", function(g1) {
-                        d3.json(y3+"-"+y4+".json", function(g2) {
+                    d3.json(y1+"-"+y2+"_betweenness.json", function(g1) {
+                        d3.json(y3+"-"+y4+"_betweenness.json", function(g2) {
                             graph = compute_union(g1, g2);
                             append_meta_info(graph, meta_data);
                             sigmaplot(graph, "container-1", "#0f0", true);

@@ -128,6 +128,7 @@
             var sigmaplot = function(graph, container_name, color, remove_edges) {
                 var nodes_list = graph['nodes'],
                     edges_list = graph['edges'];
+                console.log(nodes_list[0]);
                 var s, so;
                 if (remove_edges) {
                     s = s1;
@@ -159,6 +160,7 @@
                     node.y = Math.sin(Math.PI * 2 * i / a.length);
                     node.color = color;
                     node.size = 8;
+                    node.betweenness = nodes_list[i].betweenness_centrality
                 });
 
                 s.graph.edges().forEach(function(edge, i, a){
@@ -207,7 +209,8 @@
 
                 document.getElementById('nodeDegree').addEventListener('click', function(e){
                     s.graph.nodes().forEach(function(node, i, a) {
-                        node.size = s.graph.degree(node.id);
+                        //node.size = s.graph.degree(node.id);
+                        node.size = node.betweenness_centrality;
                     });
                     s.refresh();
                 });
@@ -274,7 +277,7 @@
                 var y1 = document.getElementById('year-begin-1').value;
                 var y2 = document.getElementById('year-end-1').value;
                 d3.json("meta.json", function(meta_data){
-                    d3.json(y1+"-"+y2+".json", function(data) {
+                    d3.json(y1+"-"+y2+"_betweenness.json", function(data) {
                         append_meta_info(data, meta_data);
                         sigmaplot(data, "container-1", "#0f0", true);
                     });
@@ -285,7 +288,7 @@
                 var y1 = document.getElementById('year-begin-2').value;
                 var y2 = document.getElementById('year-end-2').value;
                 d3.json("meta.json", function(meta_data){
-                    d3.json(y1+"-"+y2+".json", function(data) {
+                    d3.json(y1+"-"+y2+"_betweenness.json", function(data) {
                         append_meta_info(data, meta_data);
                         sigmaplot(data, "container-2", "#f00", false);
                     });
