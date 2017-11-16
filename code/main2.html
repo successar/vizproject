@@ -32,7 +32,7 @@
                         <button type="button" id="endForce">End Force Layout</button>  
                         <button type="button" id="resetLayout">Reset Circular Layout</button>  
                         <button type="button" id="edgeWeight">Show Edge Weights</button>   
-                        <button type="button" id="nodeDegree">Show Node Degree</button>                             
+                        <button type="button" id="nodeDegree">Show Node Betweenness</button>                             
                     </form>
                     
                 </div>
@@ -136,6 +136,7 @@
                     node.x = Math.cos(Math.PI * 2 * i / a.length);
                     node.y = Math.sin(Math.PI * 2 * i / a.length);
                     node.color = color;
+                    node.orig_color = node.color;
                     node.size = 8;
                     //node.label = node.id;
                     node.clicked = 0;
@@ -192,6 +193,7 @@
                         node.size = Math.abs(diff);
                         if (Math.sign(diff) == -1) {
                             node.color = '#f00';
+                            node.orig_color = node.color;
                         }
                     });
                     s.refresh();
@@ -225,7 +227,7 @@
                     }
                     s.graph.nodes().forEach(function(node, i, a){
                         if (neighbors[node.id]) {
-                            node.color = color;
+                            node.color = node.orig_color;
                         }
                     });
                     s.refresh();
