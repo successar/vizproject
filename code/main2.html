@@ -188,7 +188,7 @@
                 document.getElementById('nodeDegree').addEventListener('click', function(e){
                     s.graph.nodes().forEach(function(node, i, a) {
                         //node.size = s.graph.degree(node.id);
-                        var diff = node.betweenness_centrality_1 - node.betweenness_centrality_2;
+                        var diff = node.betweenness_centrality_2 - node.betweenness_centrality_1;
                         node.size = Math.abs(diff);
                         if (Math.sign(diff) == -1) {
                             node.color = '#f00';
