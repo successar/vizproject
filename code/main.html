@@ -20,63 +20,144 @@
         <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
         <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
         <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>        
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <link href="vizproject.css" rel="stylesheet" type="text/css"/>
     </head>
     <body>
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-2 col-sm-2 col-xs-2">
-                    <form>
-                        <label for="edgefilt">Edge Filter : </label>
-                        <input class="form-control" type="text" id="edgefilt" value="100"/>
-                        <button type="button" id="startForce">Start Force Layout</button>
-                        <button type="button" id="endForce">End Force Layout</button>  
-                        <button type="button" id="resetLayout">Reset Circular Layout</button>  
-                        <button type="button" id="edgeWeight">Show Edge Weights</button>   
-                        <button type="button" id="nodeDegree">Show Node Degree</button>                             
-                    </form>
-                    
-                </div>
-                <div class="col-md-5 col-sm-5 col-xs-5">
-                    <div class="row">
-                        <form>
-                            <div class="form-group">
-                                <label for="year-begin-1">Begin year : </label>
-                                <input class="form-control" type="text" id="year-begin-1"/>
-                            </div>
-                            <div class="form-group">                                        
-                                <label for="year-end-1">End year : </label>
-                                <input class="form-control" type="text" id="year-end-1"/>
-                            </div>
-                            <div class="form-group">
-                                <button type="button" id="year-button-1">Update Graph</button>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="row">
-                        <div id="container-1"></div>
-                    </div>
-                </div>
-                <div class="col-md-5 col-sm-5 col-xs-5">
-                    <div class="row">
-                        <form>
-                            <div class="form-group">
-                                <label for="year-begin-2">Begin year : </label>
-                                <input class="form-control" type="text" id="year-begin-2"/>
-                            </div>
-                            <div class="form-group">                                        
-                                <label for="year-end-2">End year : </label>
-                                <input class="form-control" type="text" id="year-end-2"/>
-                            </div>
-                            <div class="form-group">
-                                    <button type="button" id="year-button-2">Update Graph</button>
+        <div class="wrapper">
+                
+            <div id="content">
+                <div class="container-fluid">
+                    <div class="modal left fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="myModalLabel">Widgets</h4>
                                 </div>
-                        </form>
+                
+                                <div class="modal-body">
+                                    <form>
+                                        <div class="form-group">
+                                            <label for="edgefilt">Edge Filter : </label>
+                                            <input class="form-control" type="text" id="edgefilt" value="100"/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="selectGroup">Select Group : </label>
+                                            <select id="selectGroup">
+                                                <option value="None">Choose a number</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="nodesearch">Search : </label>
+                                            <input class="form-control" type="text" id="nodesearch" value=""/> 
+                                            <button type="button" id="nodesearchbutton">Search Paper</button>
+                                        </div>  
+                                    </form>
+                                    <form>
+                                        <div class="form-group">
+                                            <button type="button" id="startForce">Start Force Layout</button>
+                                            <button type="button" id="endForce">End Force Layout</button>  
+                                            <button type="button" id="resetLayout">Reset Circular Layout</button>  
+                                        </div>
+                                        <div class="form-group">
+                                            <button type="button" id="edgeWeight">Show Edge Weights</button>   
+                                            <button type="button" id="nodeWeight">Show Node Betweenness</button> 
+                                        </div>                     
+                                    </form>
+                                </div>
+                
+                            </div><!-- modal-content -->
+                        </div><!-- modal-dialog -->
+                    </div><!-- modal -->
+                    <div class="row" style="margin : 10px">
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                            <button type="button" class="btn btn-demo" data-toggle="modal" data-target="#myModal">
+                                    Open Widgets
+                                </button>
+                            <button type="button" class="btn btn-demo" id="sidebarCollapse">
+                                    Open Information
+                            </button>    
+                        </div>
                     </div>
                     <div class="row">
-                        <div id="container-2"></div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                            <div class="row">
+                                <form>
+                                    <div class="col-md-5 col-sm-5 col-xs-5 form-group">
+                                        <label for="year-begin-1">Begin year : <span id='by1text'>1840</span></label>
+                                        <input class="form-control" type="range" id="year-begin-1" min="1836" max="1899" step="1" value="1840" oninput="updateYearText(this.value, 'by1text');"/>
+                                    </div>
+                                    <div class="col-md-5 col-sm-5 col-xs-5 form-group">                                        
+                                        <label for="year-end-1">End year : <span id='ey1text'>1845</span></label>
+                                        <input class="form-control" type="range" id="year-end-1" min="1836" max="1899" step="1" value="1845" oninput="updateYearText(this.value, 'ey1text');"/>
+                                    </div>
+                                    <div class="col-md-2 col-sm-2 col-xs-2 form-group">
+                                        <button type="button" id="year-button-1">Update</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="row">
+                                <div id="container-1"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                            <div class="row">
+                                <form>
+                                    <div class="col-md-5 col-sm-5 col-xs-5 form-group">
+                                        <label for="year-begin-2">Begin year : <span id='by2text'>1844</span></label>
+                                        <input class="form-control" type="range" id="year-begin-2" min="1836" max="1899" step="1" value="1844" oninput="updateYearText(this.value, 'by2text');"/>
+                                    </div>
+                                    <div class="col-md-5 col-sm-5 col-xs-5 form-group">                                        
+                                        <label for="year-end-2">End year : <span id='ey2text'>1847</span></label>
+                                        <input class="form-control" type="range" id="year-end-2" min="1836" max="1899" step="1" value="1847" oninput="updateYearText(this.value, 'ey2text');"/>
+                                    </div>
+                                    <div class="col-md-2 col-sm-2 col-xs-2 form-group">
+                                        <button type="button" id="year-button-2">Update</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="row">
+                                <div id="container-2"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+            <div id="sidebarInfo">
+                    <div class="modal-header">
+                        <button type="button" class="close" id="sidebarCollapseClose" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel2">Connections</h4>
+                    </div>
+    
+                    <div class="modal-body">
+                        <p id="Label">
+    
+                        </p>
+
+                        <h4>Incoming 1</h4>
+                        <p id="Incoming1">
+    
+                        </p>
+                        <h4>Incoming 2</h4>
+                        
+                        <p id="Incoming2">
+    
+                        </p>
+
+                        <h4>Outgoing 1</h4>
+                        
+                        <p id="Outgoing1">
+    
+                        </p>
+                        <h4>Outgoing 2</h4>
+                        
+                        <p id="Outgoing2">
+    
+                        </p>
+                    </div>
+                </div>
         </div>
         
         <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -84,216 +165,8 @@
         <script src="../sigma.js/build/plugins/sigma.layout.forceAtlas2.min.js"></script>
         <script src="../sigma.js/build/plugins/sigma.plugins.filter.js"></script>
         <script src="../sigma.js/build/plugins/sigma.layout.noverlap.min.js"></script>
-        <script>  
-            sigma.classes.graph.addMethod('nodeEdges', function(node) {
-                var edges = {};
-                var nodes = {};
-                var n1 = this.inNeighborsIndex[node.id];
-                var n2 = this.outNeighborsIndex[node.id];
-                for(var n in n1) {
-                    nodes[n] = n;
-                    for (var e in n1[n]) {
-                        if(!n1[n][e].hidden) {
-                        edges[e] = n1[n][e]; }
-                    }
-                }
-                for(var n in n2) {
-                    nodes[n] = n;
-                    for (var e in n2[n]) {
-                        if(!n2[n][e].hidden) {
-                        edges[e] = n2[n][e]; }
-                    }
-                }
-
-                return edges;
-            });
-            var s1 = new sigma({
-                    settings : {
-                        drawLabels : false,
-                        minNodeSize : 1,
-                        maxNodeSize : 8,
-                        minEdgeSize : 0,
-                        maxEdgeSize : 8
-                    }
-                }); 
-            var s2 = new sigma({
-                    settings : {
-                        drawLabels : false,
-                        minNodeSize : 1,
-                        maxNodeSize : 8,
-                        minEdgeSize : 0,
-                        maxEdgeSize : 8
-                    }
-                });            
-            var sigmaplot = function(graph, container_name, color, remove_edges) {
-                var nodes_list = graph['nodes'],
-                    edges_list = graph['edges'];
-                console.log(nodes_list[0]);
-                var s, so;
-                if (remove_edges) {
-                    s = s1;
-                    so = s2;
-                }
-                else {
-                    s = s2;
-                    so = s1;
-                }
-                
-                s.graph.read({
-                    nodes: nodes_list,
-                    edges: edges_list
-                });
-                
-                
-                var filter = new sigma.plugins.filter(s);
-                filter.edgesBy(function(e) {
-                    return e.weight > 100;
-                }, 'edgefilt').apply();
-
-                console.log(
-                    s.graph.nodes().length,
-                    s.graph.edges().length
-                );
-
-                s.graph.nodes().forEach(function(node, i, a) {
-                    node.x = Math.cos(Math.PI * 2 * i / a.length);
-                    node.y = Math.sin(Math.PI * 2 * i / a.length);
-                    node.color = color;
-                    node.size = 8;
-                    node.betweenness = nodes_list[i].betweenness_centrality
-                });
-
-                s.graph.edges().forEach(function(edge, i, a){
-                    edge.color = '#ccc';
-                    edge.type = "curve";
-                });
-
-                s.addRenderer({
-                    type : 'canvas',
-                    container : container_name
-                });
-                
-                s.refresh();
-
-                var updateEdges = function() {
-                    var val = parseInt(document.getElementById('edgefilt').value);
-                    filter.undo('edgefilt').edgesBy(function(e) {
-                        return e.weight > val;
-                    }, 'edgefilt').apply();
-                }
-
-                var edgefilt = document.getElementById('edgefilt');
-                edgefilt.addEventListener('input', updateEdges);
-
-                document.getElementById('startForce').addEventListener('click', function(e) {
-                    s.startForceAtlas2();
-                });
-                document.getElementById('endForce').addEventListener('click', function(e) {
-                    s.stopForceAtlas2();
-                });
-
-                document.getElementById('resetLayout').addEventListener('click', function(e) {
-                    s.graph.nodes().forEach(function(node, i, a) {
-                        node.x = Math.cos(Math.PI * 2 * i / a.length);
-                        node.y = Math.sin(Math.PI * 2 * i / a.length);
-                    });
-                    s.refresh();
-                });
-
-                document.getElementById('edgeWeight').addEventListener('click', function(e){
-                    s.graph.edges().forEach(function(edge, i, a){
-                        edge.size = edge.weight;
-                    });
-                    s.refresh();
-                });
-
-                document.getElementById('nodeDegree').addEventListener('click', function(e){
-                    s.graph.nodes().forEach(function(node, i, a) {
-                        //node.size = s.graph.degree(node.id);
-                        node.size = node.betweenness_centrality;
-                    });
-                    s.refresh();
-                });
-
-                s.bind("overNode", function(node){
-                    var neighbors = {};
-                    var edges = s.graph.nodeEdges(node.data.node);
-                    for(var e in edges) {
-                        e = edges[e];
-                        e.color = '#000';
-                        neighbors[e.source] = 1;
-                        neighbors[e.target] = 1;
-                    }
-                    s.graph.nodes().forEach(function(node, i, a){
-                        if (neighbors[node.id]) {
-                            node.color = '#00f';
-                        }
-                    });
-                    s.refresh();
-                    if ('recurse' in node.data){ return; }
-
-                    if(typeof so.graph.nodes(node.data.node.id) == 'undefined') {return;}
-                    so.renderers[0].dispatchEvent('overNode', {node : so.graph.nodes(node.data.node.id), recurse : false});
-                    
-                });
-                
-                s.bind("outNode", function(node) {
-                    var neighbors = {};
-                    var edges = s.graph.nodeEdges(node.data.node);
-                    for(var e in edges) {
-                        e = edges[e];
-                        e.color = '#ccc';
-                        neighbors[e.source] = 1;
-                        neighbors[e.target] = 1;
-                    }
-                    s.graph.nodes().forEach(function(node, i, a){
-                        if (neighbors[node.id]) {
-                            node.color = color;
-                        }
-                    });
-                    s.refresh();
-                    if('recurse' in node.data) { return; }
-                    if(typeof so.graph.nodes(node.data.node.id) == 'undefined') {return;}
-
-                    so.renderers[0].dispatchEvent('outNode', {node : so.graph.nodes(node.data.node.id), recurse : false});
-                    
-                });
-            };
-
-            var append_meta_info = function(graph, meta_data) {
-                var nodes = graph['nodes'];
-                for(var key in nodes) {
-                    node = nodes[key];
-                    if (node['id'].substring(1) in meta_data) {
-                        node['label'] = meta_data[node['id'].substring(1)]['title'];
-                    }
-                    else {
-                        node['label'] = node['id'];
-                    }
-                }
-            }
-
-            document.getElementById('year-button-1').addEventListener('click', function(e){
-                var y1 = document.getElementById('year-begin-1').value;
-                var y2 = document.getElementById('year-end-1').value;
-                d3.json("meta.json", function(meta_data){
-                    d3.json(y1+"-"+y2+"_betweenness.json", function(data) {
-                        append_meta_info(data, meta_data);
-                        sigmaplot(data, "container-1", "#0f0", true);
-                    });
-                });
-            });
-
-            document.getElementById('year-button-2').addEventListener('click', function(e){
-                var y1 = document.getElementById('year-begin-2').value;
-                var y2 = document.getElementById('year-end-2').value;
-                d3.json("meta.json", function(meta_data){
-                    d3.json(y1+"-"+y2+"_betweenness.json", function(data) {
-                        append_meta_info(data, meta_data);
-                        sigmaplot(data, "container-2", "#f00", false);
-                    });
-                });
-            });
+        <script src="vizproject.js">  
+            
         </script>
     </body>
 </html>
