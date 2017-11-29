@@ -215,6 +215,8 @@ var sigmaplot = function(graph, container_name, color, remove_edges) {
     });
 };
 
+////////////////////////////////////////////////////////////////////////////////////////////
+
 $('#nodesearchbutton').on('click', function(e){
     var val = document.getElementById('nodesearch').value;
     if (val == 'None' || val == '') {
@@ -354,6 +356,8 @@ var appendInfoList = function(innodes1, innodes2, outnodes1, outnodes2) {
     $('#Outgoing2').html('<ul>' + nodes_connected_outgoing.join('\n') + '</ul>');
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////
+
 var hoverOverNode_s1 = function(node_id) {
     var n1 = s1.graph.nodes(node_id);
     s1.renderers[0].dispatchEvent('overNode', {node : n1});
@@ -374,6 +378,104 @@ var hoverOutNode_s2 = function(node_id) {
     s2.renderers[0].dispatchEvent('outNode', {node : n1});
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////
+var width_chart = $('#chart').width();
+var height_chart = 1000; //$('#chart').height();
+var margin = {
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0
+},
+width = width_chart - margin.left - margin.right,
+height = height_chart - margin.top - margin.bottom;
+
+var x = d3.scaleLinear()
+.range([0, width]);
+
+var y = d3.scaleBand()
+.rangeRound([0, height])
+.padding(0.2);
+
+var svg = d3.select("#chart").append("svg")
+.attr("width", width + margin.left + margin.right)
+.attr("height", height + margin.top + margin.bottom)
+.append("g")
+.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var plotbarChart = function() {
+    var n1 = s1.graph.nodes();
+    var n2 = s2.graph.nodes();
+    var nodes = {};
+    for(var i in n1) {
+        n = n1[i];
+        nodes[n.id] = {'id' : n.id};
+        nodes[n.id].bc1 = n.betweenness_centrality;
+        nodes[n.id].bc2 = 0;
+        nodes[n.id].in = 0;
+    }
+    for(var i in n2) {
+        n = n2[i];
+        if(nodes[n.id]) {
+            nodes[n.id].bc2 = n.betweenness_centrality;
+        }
+        else {
+            nodes[n.id] = {'id' : n.id};
+            nodes[n.id].bc2 = n.betweenness_centrality;
+            nodes[n.id].bc1 = 0;
+            nodes[n.id].in = 1;
+        }
+    }
+    for(var i in nodes) {
+        n = nodes[i];
+        n.diff = n.bc2 - n.bc1;
+    }
+    var nodes = $.map(nodes, function(value, key) { return value });
+    nodes.sort(function(a, b) { return b.diff - a.diff; });
+    
+    y.domain(nodes.map(function(d) { return d.id; }));
+    var ext = d3.extent(nodes, function(d) { return d.diff; });
+    x.domain(ext).nice();
+    
+    svg.selectAll(".bar")
+        .data(nodes)
+        .enter().append("rect")
+        .attr("class", function(d) {
+            if (d.diff < 0){
+                return "bar negative";
+            } else {
+                return "bar positive";
+            }})
+        .attr("x", function(d) { return x(Math.min(0, d.diff)); })
+        .attr("y", function(d) { return y(d.id);  })
+        .attr("height", y.bandwidth())
+        .attr("width", function(d) {  return Math.abs(x(d.diff) - x(0));  })
+        .on("mouseover", function(d) {
+            if(d.in == 0) {
+                hoverOverNode_s1(d.id);
+            }
+            else {
+                hoverOverNode_s2(d.id);
+            }
+        })
+        .on("mouseout", function(d) {
+            if(d.in == 0) {
+                hoverOutNode_s1(d.id);
+            }
+            else {
+                hoverOutNode_s2(d.id);
+            }
+        });
+
+    svg.append("g")
+        .attr("class", "y axis")
+        .append("line")
+        .attr("x1", x(0))
+        .attr("x2", x(0))
+        .attr("y2", width);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
 
 var append_meta_info = function(graph, meta_data) {
     var nodes = graph['nodes'];
@@ -391,22 +493,17 @@ var append_meta_info = function(graph, meta_data) {
 $('#year-button-1').on('click', function(e){
     var y1 = document.getElementById('year-begin-1').value;
     var y2 = document.getElementById('year-end-1').value;
+    var y3 = document.getElementById('year-begin-2').value;
+    var y4 = document.getElementById('year-end-2').value;
     d3.json("meta.json", function(meta_data){
-        d3.json(y1+"-"+y2+"_betweenness.json", function(data) {
-            append_meta_info(data, meta_data);
-            sigmaplot(data, "container-1", "#0f0", true);
-        });
-    });
-});
-
-$('#year-button-2').on('click', function(e){
-    var y1 = document.getElementById('year-begin-2').value;
-    var y2 = document.getElementById('year-end-2').value;
-    d3.json("meta.json", function(meta_data){
-        d3.json(y1+"-"+y2+"_betweenness.json", function(data) {
-            console.log(y1, y2);
-            append_meta_info(data, meta_data);
-            sigmaplot(data, "container-2", "#f00", false);
+        d3.json(y1+"-"+y2+"_betweenness.json", function(data_1) {
+            d3.json(y3+"-"+y4+"_betweenness.json", function(data_2) {
+                append_meta_info(data_1, meta_data);
+                append_meta_info(data_2, meta_data);
+                sigmaplot(data_1, "container-1", "#0f0", true);
+                sigmaplot(data_2, "container-2", "#f00", false);
+                plotbarChart();
+            });
         });
     });
 });
@@ -422,10 +519,21 @@ function updateYearText(val, textbox) {
 $(document).ready(function () {
 
     $('#sidebarCollapse').on('click', function () {
+        $('#vertexinfo').removeClass('hidden');
+        $('#chart').addClass('hidden');
         $('#sidebarInfo').toggleClass('active');
         s1.refresh();
         s2.refresh();
     });
+
+    $('#sidebarCollapse2').on('click', function () {
+        $('#vertexinfo').addClass('hidden');
+        $('#chart').removeClass('hidden');
+        $('#sidebarInfo').toggleClass('active');
+        s1.refresh();
+        s2.refresh();
+    });
+
     $('#sidebarCollapseClose').on('click', function () {
         $('#sidebarInfo').toggleClass('active');
         s1.refresh();
