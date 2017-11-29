@@ -43,13 +43,38 @@ var s2 = new sigma({
 
 var clickedNodeId = '';
 
-
+function quantile_nodes(array, percentile) {
+    index = percentile/100. * (array.length-1);
+    if (Math.floor(index) == index) {
+    	result = array[index].betweenness_centrality;
+    } else {
+        i = Math.floor(index)
+        fraction = index - i;
+        result = array[i].betweenness_centrality + (array[i+1].betweenness_centrality - array[i].betweenness_centrality) * fraction;
+    }
+    return result;
+}
 
 var sigmaplot = function(graph, container_name, color, remove_edges) {
     var nodes_list = graph['nodes'],
         edges_list = graph['edges'];
 
-    console.log(nodes_list[0]);
+    var sorted_nodes = nodes_list.slice(0).sort(function(a, b) { return b.betweenness_centrality - a.betweenness_centrality; });
+    var top10 = quantile_nodes(sorted_nodes, 10);
+    var iin = 0, iout = 0;
+    for(var i in nodes_list) {
+        node = nodes_list[i];
+        if(node.betweenness_centrality >= top10) {
+            node.centrality_group = 0;
+            node.i = iin;
+            iin += 1;
+        }
+        else {
+            node.centrality_group = 1;
+            node.i = iout;
+            iout += 1;
+        }
+    }
     var s, so, num_s, num_so;
     if (remove_edges) {
         s = s1;
@@ -86,8 +111,13 @@ var sigmaplot = function(graph, container_name, color, remove_edges) {
     });
 
     s.graph.nodes().forEach(function(node, i, a) {
-        node.x = Math.cos(Math.PI * 2 * i / a.length);
-        node.y = Math.sin(Math.PI * 2 * i / a.length);
+        radius = 1 + node.centrality_group;
+        total_length = 0;
+        if(node.centrality_group == 1) { total_length = iout; }
+        else {total_length = iin;}
+        radius += Math.random()/3;
+        node.x = radius * Math.cos(Math.PI * 2 * node.i / total_length);
+        node.y = radius * Math.sin(Math.PI * 2 * node.i / total_length);
         node.color = color;
         node.orig_color = color;
         node.size = 8;
@@ -147,7 +177,7 @@ var sigmaplot = function(graph, container_name, color, remove_edges) {
                 node.color = '#f00';
             }
             else {
-                node.color = '#0f0';
+                node.color = '#006400';
             }
             node.orig_color = node.color;
 
@@ -187,7 +217,6 @@ var sigmaplot = function(graph, container_name, color, remove_edges) {
         }
         appendInfoList(innodes1, innodes2, outnodes1, outnodes2);
         clickedNodeId = node.data.node.id;
-        $('#sidebarInfo').addClass('active');
         s1.refresh();
         s2.refresh();
     });
@@ -281,17 +310,16 @@ var clickedNode = function(s, node_id) {
         top_neighbors[e.target] = 1;
     }
 
-    node.color = '#00f';
+    
     s.graph.nodes().forEach(function(node_p, i, a){
         if(neighbors[node_p.id]){
             node_p.color = '#00f';
         }
-        if(top_neighbors[node_p.id]){
-            node_p.color = '#cc3399';
-            //s.renderers[0].dispatchEvent('overNode', {node : node_p});
-        }
         
     });
+
+    node.color = '#0ff';
+
     $('#Label').html(node.label);
     s.refresh();
     return [incoming_nodes, outgoing_nodes];
@@ -323,37 +351,42 @@ var appendInfoList = function(innodes1, innodes2, outnodes1, outnodes2) {
     var nodes_connected_outgoing = [];
     s1.graph.nodes().forEach(function(node_p, i, a){
         if(innodes1[node_p.id]) {
+            var node_class = 'nodeinone';
+            if(innodes2[node_p.id]) { node_class = 'nodeboth'; }
             nodes_connected_incoming.push(
-                                    '<li onmouseover="hoverOverNode_s1'+'(\'' + node_p.id + '\')"'
+                                    '<li class="' + node_class + '" onmouseover="hoverOverNode_s1'+'(\'' + node_p.id + '\')"'
                                     + ' onmouseout="hoverOutNode_s1'+'(\'' + node_p.id + '\')"'
                                     + '>' + node_p.label + '</li>');
         }
         if(outnodes1[node_p.id]) {
-            nodes_connected_outgoing.push('<li onmouseover="hoverOverNode_s1'+'(\'' + node_p.id + '\')"' 
+            var node_class = 'nodeinone';
+            if(outnodes2[node_p.id]) { node_class = 'nodeboth'; }
+            nodes_connected_outgoing.push(
+                                    '<li class="' + node_class + '" onmouseover="hoverOverNode_s1'+'(\'' + node_p.id + '\')"' 
                                     + ' onmouseout="hoverOutNode_s1'+'(\'' + node_p.id + '\')"'
                                     + '>' + node_p.label + '</li>');
         }
     });
-    $('#Incoming1').html('<ul>' + nodes_connected_incoming.join('\n') + '</ul>');
-    $('#Outgoing1').html('<ul>' + nodes_connected_outgoing.join('\n') + '</ul>');
-
-    var nodes_connected_incoming = [];
-    var nodes_connected_outgoing = [];
+    
     s2.graph.nodes().forEach(function(node_p, i, a){
         if(innodes2[node_p.id] && !innodes1[node_p.id]) {
+            node_class = 'nodeintwo';
             nodes_connected_incoming.push(
-                                    '<li onmouseover="hoverOverNode_s2'+'(\'' + node_p.id + '\')"'
+                                    '<li class="' + node_class + '" onmouseover="hoverOverNode_s2'+'(\'' + node_p.id + '\')"'
                                     + ' onmouseout="hoverOutNode_s2'+'(\'' + node_p.id + '\')"'
                                     + '>' + node_p.label + '</li>');
         }
         if(outnodes2[node_p.id] && !outnodes1[node_p.id]) {
-            nodes_connected_outgoing.push('<li onmouseover="hoverOverNode_s2'+'(\'' + node_p.id + '\')"' 
+            node_class = 'nodeintwo';
+            nodes_connected_outgoing.push(
+                                    '<li class="' + node_class + '" onmouseover="hoverOverNode_s2'+'(\'' + node_p.id + '\')"' 
                                     + ' onmouseout="hoverOutNode_s2'+'(\'' + node_p.id + '\')"'
                                     + '>' + node_p.label + '</li>');
         }
     });
-    $('#Incoming2').html('<ul>' + nodes_connected_incoming.join('\n') + '</ul>');
-    $('#Outgoing2').html('<ul>' + nodes_connected_outgoing.join('\n') + '</ul>');
+
+    $('#Incoming1').html('<ul>' + nodes_connected_incoming.join('\n') + '</ul>');
+    $('#Outgoing1').html('<ul>' + nodes_connected_outgoing.join('\n') + '</ul>');
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -380,7 +413,7 @@ var hoverOutNode_s2 = function(node_id) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 var width_chart = $('#chart').width();
-var height_chart = 1000; //$('#chart').height();
+var height_chart = 1500; //$('#chart').height();
 var margin = {
     top: 0,
     right: 0,
@@ -390,18 +423,23 @@ var margin = {
 width = width_chart - margin.left - margin.right,
 height = height_chart - margin.top - margin.bottom;
 
-var x = d3.scaleLinear()
-.range([0, width]);
-
-var y = d3.scaleBand()
-.rangeRound([0, height])
-.padding(0.2);
-
 var svg = d3.select("#chart").append("svg")
 .attr("width", width + margin.left + margin.right)
 .attr("height", height + margin.top + margin.bottom)
-.append("g")
-.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+.append("g");
+//.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+function quantile(array, percentile) {
+    index = percentile/100. * (array.length-1);
+    if (Math.floor(index) == index) {
+    	result = array[index].diff;
+    } else {
+        i = Math.floor(index)
+        fraction = index - i;
+        result = array[i].diff + (array[i+1].diff - array[i].diff) * fraction;
+    }
+    return result;
+}
 
 var plotbarChart = function() {
     var n1 = s1.graph.nodes();
@@ -433,9 +471,17 @@ var plotbarChart = function() {
     var nodes = $.map(nodes, function(value, key) { return value });
     nodes.sort(function(a, b) { return b.diff - a.diff; });
     
-    y.domain(nodes.map(function(d) { return d.id; }));
+    var top10 = nodes.filter(d => d.diff > quantile(nodes, 10));
+    var bottom10 = nodes.filter(d => d.diff < quantile(nodes, 90));
+    var nodes = top10.concat(bottom10);
+    //var nodes = nodes.slice(0, 40).concat(nodes.slice(nodes.length - 40, nodes.length));
+    
     var ext = d3.extent(nodes, function(d) { return d.diff; });
-    x.domain(ext).nice();
+    var x = d3.scaleLinear().domain(ext).nice().range([0, width]);
+    
+    var y = d3.scaleBand().domain(nodes.map(function(d) { return d.id; }))
+                .range([0, height])
+                .padding(0.1);
     
     svg.selectAll(".bar")
         .data(nodes)
@@ -464,6 +510,16 @@ var plotbarChart = function() {
             }
             else {
                 hoverOutNode_s2(d.id);
+            }
+        })
+        .on("click", function(d) {
+            if(d.in == 0) {
+                var selected_node = s1.graph.nodes(d.id);
+                s1.renderers[0].dispatchEvent('clickNode', {node : selected_node});
+            }
+            else {
+                var selected_node = s2.graph.nodes(d.id);
+                s2.renderers[0].dispatchEvent('clickNode', {node : selected_node});
             }
         });
 
@@ -500,7 +556,7 @@ $('#year-button-1').on('click', function(e){
             d3.json(y3+"-"+y4+"_betweenness.json", function(data_2) {
                 append_meta_info(data_1, meta_data);
                 append_meta_info(data_2, meta_data);
-                sigmaplot(data_1, "container-1", "#0f0", true);
+                sigmaplot(data_1, "container-1", "#006400", true);
                 sigmaplot(data_2, "container-2", "#f00", false);
                 plotbarChart();
             });
@@ -520,7 +576,7 @@ $(document).ready(function () {
 
     $('#sidebarCollapse').on('click', function () {
         $('#vertexinfo').removeClass('hidden');
-        $('#chart').addClass('hidden');
+        $('#chartArea').addClass('hidden');
         $('#sidebarInfo').toggleClass('active');
         s1.refresh();
         s2.refresh();
@@ -528,7 +584,7 @@ $(document).ready(function () {
 
     $('#sidebarCollapse2').on('click', function () {
         $('#vertexinfo').addClass('hidden');
-        $('#chart').removeClass('hidden');
+        $('#chartArea').removeClass('hidden');
         $('#sidebarInfo').toggleClass('active');
         s1.refresh();
         s2.refresh();

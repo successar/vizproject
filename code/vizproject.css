@@ -30,12 +30,12 @@
 }
 
 .bar.positive {
-    fill: darkred;
+    fill : green;    
   }
 
-  .bar.negative {
-    fill: steelblue;
-  }
+.bar.negative {
+    fill: darkred;
+}
 
 .hidden {
     display : none;
@@ -54,6 +54,28 @@
     position: absolute;
     top: 0;
     left: 0;
+}
+
+.nodeboth {
+    color: #f00;
+}
+
+.nodeinone {
+    color : rebeccapurple;
+}
+
+.nodeintwo {
+    color : green;
+}
+
+ul li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+ul {
+    padding : 0;
 }
 
 .modal.left .modal-dialog,
@@ -114,4 +136,8 @@
 .modal-header {
     border-bottom-color: #EEEEEE;
     background-color: #FAFAFA;
+}
+
+.bar:hover {
+    fill : #000;
 }
