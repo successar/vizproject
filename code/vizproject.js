@@ -118,6 +118,8 @@ var sigmaplot = function(graph, container_name, color, remove_edges) {
         radius += Math.random()/3;
         node.x = radius * Math.cos(Math.PI * 2 * node.i / total_length);
         node.y = radius * Math.sin(Math.PI * 2 * node.i / total_length);
+        node.orig_x = node.x;
+        node.orig_y = node.y;
         node.color = color;
         node.orig_color = color;
         node.size = 8;
@@ -149,10 +151,18 @@ var sigmaplot = function(graph, container_name, color, remove_edges) {
         s.stopForceAtlas2();
     });
 
-    $('#resetLayout').on('click', function(e) {
+    $('#circularLayout').on('click', function(e) {
         s.graph.nodes().forEach(function(node, i, a) {
             node.x = Math.cos(Math.PI * 2 * i / a.length);
             node.y = Math.sin(Math.PI * 2 * i / a.length);
+        });
+        s.refresh();
+    });
+
+    $('#resetLayout').on('click', function(e) {
+        s.graph.nodes().forEach(function(node, i, a) {
+            node.x = node.orig_x;
+            node.y = node.orig_y;
         });
         s.refresh();
     });
