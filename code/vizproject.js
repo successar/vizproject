@@ -347,8 +347,17 @@ var clickedNode = function(s, node_id) {
     });
 
     node.color = '#0ff';
-
-    $('#Label').html(node.label);
+    var node_info = [];
+    substr = node['id'].substring(1)
+    if(substr in meta_info) {
+        var info = meta_info[substr];
+        for(var i in info) {
+            j = info[i];
+            node_info.push('<li><b>'+ i + '</b> : ' + j + '</li>');
+        }
+    }
+    $('#myModalLabel2').html(node.label);
+    $('#Label').html('<ul>' + node_info.join('\n') + '</ul>');
     s.refresh();
     return [incoming_nodes, outgoing_nodes];
 }
@@ -374,42 +383,66 @@ var UnclickedNode = function(s, node_id) {
     s.refresh();
 }
 
+var getTopN = function(dict, n) {
+    var keys = Object.keys(dict);
+    keys.sort(function(a, b){
+        return -dict[a].weight + dict[b].weight;
+    });
+
+    return keys.slice(0, n);
+}
+
 var appendInfoList = function(innodes1, innodes2, outnodes1, outnodes2, top1, top2) {
     var nodes_connected_incoming = [];
     var nodes_connected_outgoing = [];
+    
+    var insort1 = getTopN(innodes1, 5), insort2 = getTopN(innodes2, 5);
+    var outsort1 = getTopN(outnodes1, 5), outsort2 = getTopN(outnodes2, 5);
+    
+    console.log(insort1, insort2);
     s1.graph.nodes().forEach(function(node_p, i, a){
         if(innodes1[node_p.id]) {
             var node_class = 'nodeinone';
             if(innodes2[node_p.id]) { node_class = 'nodeboth'; }
-            nodes_connected_incoming.push(
-                                    '<li class="' + node_class + '" onmouseover="hoverOverNode_s1'+'(\'' + node_p.id + '\')"'
-                                    + ' onmouseout="hoverOutNode_s1'+'(\'' + node_p.id + '\')"'
-                                    + '>' + node_p.label + '</li>');
+            var li =  '<li class="' + node_class + '" onmouseover="hoverOverNode_s1'+'(\'' + node_p.id + '\')"'
+            + ' onmouseout="hoverOutNode_s1'+'(\'' + node_p.id + '\')"'
+            + '>' + node_p.label + '</li>';
+            if(insort1.includes(node_p.id) || insort2.includes(node_p.id)) {
+                nodes_connected_incoming.unshift(li);
+            }
+            else {
+                nodes_connected_incoming.push(li);
+            }
         }
         if(outnodes1[node_p.id]) {
             var node_class = 'nodeinone';
             if(outnodes2[node_p.id]) { node_class = 'nodeboth'; }
-            nodes_connected_outgoing.push(
-                                    '<li class="' + node_class + '" onmouseover="hoverOverNode_s1'+'(\'' + node_p.id + '\')"' 
-                                    + ' onmouseout="hoverOutNode_s1'+'(\'' + node_p.id + '\')"'
-                                    + '>' + node_p.label + '</li>');
+            var li =  '<li class="' + node_class + '" onmouseover="hoverOverNode_s1'+'(\'' + node_p.id + '\')"' 
+                    + ' onmouseout="hoverOutNode_s1'+'(\'' + node_p.id + '\')"'
+                    + '>' + node_p.label + '</li>';
+            nodes_connected_outgoing.push(li);
         }
     });
     
     s2.graph.nodes().forEach(function(node_p, i, a){
         if(innodes2[node_p.id] && !innodes1[node_p.id]) {
             node_class = 'nodeintwo';
-            nodes_connected_incoming.push(
-                                    '<li class="' + node_class + '" onmouseover="hoverOverNode_s2'+'(\'' + node_p.id + '\')"'
-                                    + ' onmouseout="hoverOutNode_s2'+'(\'' + node_p.id + '\')"'
-                                    + '>' + node_p.label + '</li>');
+            var li = '<li class="' + node_class + '" onmouseover="hoverOverNode_s2'+'(\'' + node_p.id + '\')"'
+                    + ' onmouseout="hoverOutNode_s2'+'(\'' + node_p.id + '\')"'
+                    + '>' + node_p.label + '</li>';
+            if(insort2.includes(node_p.id)) {
+                nodes_connected_incoming.unshift(li);
+            }
+            else {
+                nodes_connected_incoming.push(li);
+            }
         }
         if(outnodes2[node_p.id] && !outnodes1[node_p.id]) {
             node_class = 'nodeintwo';
-            nodes_connected_outgoing.push(
-                                    '<li class="' + node_class + '" onmouseover="hoverOverNode_s2'+'(\'' + node_p.id + '\')"' 
-                                    + ' onmouseout="hoverOutNode_s2'+'(\'' + node_p.id + '\')"'
-                                    + '>' + node_p.label + '</li>');
+            var li = '<li class="' + node_class + '" onmouseover="hoverOverNode_s2'+'(\'' + node_p.id + '\')"' 
+                    + ' onmouseout="hoverOutNode_s2'+'(\'' + node_p.id + '\')"'
+                    + '>' + node_p.label + '</li>';
+            nodes_connected_outgoing.push(li);
         }
     });
 
