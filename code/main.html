@@ -44,9 +44,9 @@
                                             <input class="form-control" type="text" id="edgefilt" value="100"/>
                                         </div>
                                         <div class="form-group">
-                                            <label for="selectGroup">Select Group : </label>
-                                            <select id="selectGroup">
-                                                <option value="None">Choose a number</option>
+                                            <label for="selectRegion">Select Region : </label>
+                                            <select id="selectRegion">
+                                                <option value="None">Choose a Region</option>
                                             </select>
                                         </div>
                                         <div class="form-group">
@@ -66,7 +66,23 @@
                                         <div class="form-group">
                                             <button type="button" id="edgeWeight">Show Edge Weights</button>   
                                             <button type="button" id="nodeWeight">Show Node Betweenness</button> 
-                                        </div>                     
+                                        </div>  
+                                        <div class="form-group">
+                                            <label for="X">X</label>
+                                            <select id="x">
+                                                <option value="longitude">Longitude</option>
+                                                <option value="orig_x" selected="true">X</option>
+                                                <option value="betweenness">Betweenness</option>
+                                            </select>  
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="Y">Y</label>                                            
+                                            <select id="y">
+                                                <option value="latitude">Latitude</option>
+                                                <option value="orig_y" selected="true">Y</option>
+                                                <option value="betweenness">Betweenness</option>
+                                            </select> 
+                                        </div>                   
                                     </form>
                                 </div>
                 
