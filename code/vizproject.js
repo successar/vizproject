@@ -26,7 +26,7 @@ sigma.classes.graph.addMethod('nodeEdges', function (node) {
 var s1 = new sigma({
     settings: {
         drawLabels: false,
-        minNodeSize: 1,
+        minNodeSize: 2,
         maxNodeSize: 8,
         minEdgeSize: 0,
         maxEdgeSize: 8
@@ -36,7 +36,7 @@ var s1 = new sigma({
 var s2 = new sigma({
     settings: {
         drawLabels: false,
-        minNodeSize: 1,
+        minNodeSize: 2,
         maxNodeSize: 8,
         minEdgeSize: 0,
         maxEdgeSize: 8
@@ -102,6 +102,7 @@ var sigmaplot = function (graph, container_name, color, remove_edges) {
 
 
     var filter = new sigma.plugins.filter(s);
+    filter.undo('edgefilt').undo('nodefilt').apply();
     filter.edgesBy(function (e) {
         return e.weight > 100;
     }, 'edgefilt').apply();
@@ -167,6 +168,10 @@ var sigmaplot = function (graph, container_name, color, remove_edges) {
 
     $('#endForce').on('click', function (e) {
         s.stopForceAtlas2();
+        s.cameras[0].goTo({
+            x : 0, y : 0, ratio : 1, angle : 0
+        });
+        s.refresh();
     });
 
     $('#geographicLayout').on('click', function (e) {
@@ -180,6 +185,9 @@ var sigmaplot = function (graph, container_name, color, remove_edges) {
                 node.hidden = true;
             }
         });
+        s.cameras[0].goTo({
+            x : 0, y : 0, ratio : 2, angle : 0
+        });
         s.refresh();
     });
 
@@ -188,6 +196,9 @@ var sigmaplot = function (graph, container_name, color, remove_edges) {
             node.hidden = false;
             node.x = Math.cos(Math.PI * 2 * i / a.length);
             node.y = Math.sin(Math.PI * 2 * i / a.length);
+        });
+        s.cameras[0].goTo({
+            x : 0, y : 0, ratio : 2, angle : 0
         });
         s.refresh();
     });
@@ -198,6 +209,9 @@ var sigmaplot = function (graph, container_name, color, remove_edges) {
             node.x = node.orig_x;
             node.y = node.orig_y;
         });
+        s.cameras[0].goTo({
+            x : 0, y : 0, ratio : 2, angle : 0
+        });
         s.refresh();
     });
 
@@ -206,6 +220,9 @@ var sigmaplot = function (graph, container_name, color, remove_edges) {
         s.graph.nodes().forEach(function (node, i, a) {
             node.x = node[field];
         });
+        s.cameras[0].goTo({
+            x : 0, y : 0, ratio : 2, angle : 0
+        });
         s.refresh();
     });
 
@@ -213,6 +230,9 @@ var sigmaplot = function (graph, container_name, color, remove_edges) {
         field = $('#y').val();
         s.graph.nodes().forEach(function (node, i, a) {
             node.y = node[field];
+        });
+        s.cameras[0].goTo({
+            x : 0, y : 0, ratio : 2, angle : 0
         });
         s.refresh();
     });
@@ -261,6 +281,10 @@ var sigmaplot = function (graph, container_name, color, remove_edges) {
                 return false;
             }, 'nodefilt').apply();
         }
+        s.cameras[0].goTo({
+            x : 0, y : 0, ratio : 2, angle : 0
+        });
+        s.refresh();
     });
 
 
@@ -669,6 +693,8 @@ $('#year-button-1').on('click', function (e) {
                 parseMetaInfo(meta_data);
                 append_meta_info(data_1, meta_data);
                 append_meta_info(data_2, meta_data);
+                s1.graph.clear();
+                s2.graph.clear();
                 sigmaplot(data_1, "container-1", "#006400", true);
                 sigmaplot(data_2, "container-2", "#f00", false);
                 plotbarChart();
