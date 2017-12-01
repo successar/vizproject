@@ -172,12 +172,12 @@
                     node.color = color;
                     node.orig_color = node.color;
                     node.size = 8;
-                    node.clicked = 0;
+                    node.clicked = false;
                 });
 
                 s.graph.edges().forEach(function(edge, i, a){
                     edge.color = '#ccc';
-                    edge.type = "curve";
+                    edge.type = "arrow";
                 });
 
                 s.addRenderer({
@@ -247,16 +247,60 @@
 
                 $('#nodesearchbutton').on('click', function(e){
                     var val = document.getElementById('nodesearch').value;
-                    if (val == 'None') {
+                    if (val == 'None' || val == '') {
                         filter.undo('nodefilt').nodesBy(function(n) {
                             return true;
                         }, 'nodefilt').apply();
                     }
                     else {
+                        var selected_node = false;
+                        s.graph.nodes().forEach(function(node, i, a){
+                            if (node.label == val) {
+                                selected_node = node;
+                            }
+                        });
+                        var neighbors = {};
+                        var edges = s.graph.nodeEdges(selected_node);
+                        for(var e in edges) {
+                            e = edges[e];
+                            neighbors[e.source] = 1;
+                            neighbors[e.target] = 1;
+                        }
+                        neighbors[selected_node.id] = 1;
                         filter.undo('nodefilt').nodesBy(function(n) {
-                            return n.label == val;
+                            return n.id in neighbors;
                         }, 'nodefilt').apply();
                     }
+                });
+
+                s.bind("clickNode", function(node){
+                    var neighbors = {};
+                    var edges = s.graph.nodeEdges(node.data.node);
+                    for(var e in edges) {
+                        e = edges[e];
+                        neighbors[e.source] = 1;
+                        neighbors[e.target] = 1;
+                    }
+                    s.graph.nodes().forEach(function(node, i, a){
+                        if (node.id in neighbors) {
+                            node.hidden = false;
+                        }
+                    });                    
+                });
+
+                s.bind("doubleClickNode", function(node){
+                    var neighbors = {};
+                    var edges = s.graph.nodeEdges(node.data.node);
+                    for(var e in edges) {
+                        e = edges[e];
+                        neighbors[e.source] = 1;
+                        neighbors[e.target] = 1;
+                    }
+                    s.graph.nodes().forEach(function(node, i, a){
+                        if (node.id in neighbors) {
+                            node.hidden = true;
+                        }
+                    });                    
                 });
 
 
