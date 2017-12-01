@@ -83,7 +83,7 @@ function quantile_nodes(array, percentile) {
     return result;
 }
 
-var sigmaplot = function (graph, color, remove_edges) {
+var sigmaplot = function (graph, remove_edges) {
     var nodes_list = graph['nodes'],
         edges_list = graph['edges'];
 
@@ -154,7 +154,6 @@ var sigmaplot = function (graph, color, remove_edges) {
             if(node.longitude == 'None') node.longitude = 0;
             node.color = colorCountry(meta_info[substr]['country']);
             node.orig_color =  colorCountry(meta_info[substr]['country']);
-            console.log(node.color);
         }
         else {
             node.hidden = true;
@@ -284,10 +283,10 @@ var sigmaplot = function (graph, color, remove_edges) {
             node.diff = c2 - c1;
         });
         var ext = d3.extent(s.graph.nodes(), function (d) { return Math.abs(d.diff); });
-        var x = d3.scaleLinear().domain(ext).nice().range([0.5, 1.]);
+        var x = d3.scaleLinear().domain(ext).nice().range([0.7, 1.]);
         $.each(s.graph.nodes(), function(index, node) {
+            node.color = colorconvert(node.orig_color, x(Math.abs(node.diff)));
             node.orig_color = node.color;
-            node.color = colorconvert(node.color, x(Math.abs(node.diff)));
         });
         s.refresh();
     });
@@ -736,8 +735,9 @@ $('#year-button-1').on('click', function (e) {
                 append_meta_info(data_2, meta_data);
                 s1.graph.clear();
                 s2.graph.clear();
-                sigmaplot(data_1, "#006400", true);
-                sigmaplot(data_2, "#f00", false);
+                sigmaplot(data_1, true);
+                sigmaplot(data_2, false);
+                $('#nodeWeight').click();
                 plotbarChart();
             });
         });
