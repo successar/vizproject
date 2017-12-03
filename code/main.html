@@ -39,16 +39,11 @@
                                 </div>
                 
                                 <div class="modal-body" id="widgets">
-                                    <form>
+                                    <form class="widgets">
                                         <div class="form-group">
                                             <label for="edgefilt">Edge Filter : </label>
                                             <input class="form-control" type="text" id="edgefilt" value="100"/>
                                         </div>
-                                        <div class="form-group">
-                                            <label for="nodesearch">Search : </label>
-                                            <input class="form-control" type="text" id="nodesearch" value=""/> 
-                                            <button type="button" id="nodesearchbutton">Search Paper</button>
-                                        </div> 
                                         <div class="form-group">
                                             <label for="selectnormplace">Search : </label>
                                             <input class="form-control" type="text" id="selectnormplace" value=""/> 
@@ -64,6 +59,8 @@
                                                 <option value="AU">AU</option>
                                             </select>
                                         </div>
+                                    </form>
+                                    <form>
                                         <div class="form-group">
                                             <label for="nodesearch">Search : </label>
                                             <!--<input class="form-control" type="text" id="nodesearch" value=""/>-->
@@ -73,7 +70,7 @@
                                         </div>  
                                     </form>
                                     <hr/>
-                                    <form>
+                                    <form class="widgets">
                                         <div class="form-group">
                                             <button type="button" id="startForce">Start Force Layout</button>
                                             <button type="button" id="endForce">End Force Layout</button>  
@@ -117,7 +114,7 @@
                             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
                                     Open Widgets
                                 </button>
-                            <button type="button" class="btn btn-info" id="sidebarCollapse">
+                            <button type="button" class="btn btn-info" id="sidebarCollapse"> 
                                     Open Information
                             </button>    
                             <button type="button" class="btn btn-demo" id="sidebarCollapse2">
@@ -212,8 +209,8 @@
         <script src="../sigma.js/build/plugins/sigma.layout.forceAtlas2.min.js"></script>
         <script src="../sigma.js/build/plugins/sigma.plugins.filter.js"></script>
         <script src="../sigma.js/build/plugins/sigma.layout.noverlap.min.js"></script>
-        <script src="vizproject.js">
-        </script>
-        <script src="awesomplete.js" async></script>
+        <script src="vizproject.js"></script>
+        <script src="awesomplete.js"></script>        
+        
     </body>
 </html>

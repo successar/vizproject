@@ -394,6 +394,7 @@ var sigmaplot = function (graph, remove_edges) {
 
 $('#nodesearchbutton').on('click', function (e) {
     var val = document.getElementById('nodesearch').value;
+    console.log(val);
     if (val == 'None' || val == '') {
 
     }
@@ -759,7 +760,7 @@ var append_meta_info = function (graph, meta_data) {
 var emptySigma = function() {
     s1.graph.clear();
     s2.graph.clear();
-    $('#widgets, #widgets *').off();
+    $('.widgets, .widgets *').off();
 }
 
 $('#year-button-1').on('click', function (e) {
@@ -768,6 +769,16 @@ $('#year-button-1').on('click', function (e) {
     var y3 = document.getElementById('year-begin-2').value;
     var y4 = document.getElementById('year-end-2').value;
     d3.json("data/meta.json", function (meta_data) {
+        var select = d3.select("#mylist")
+        var nodeList = [];
+        populateNodeList(meta_data, nodeList)
+       
+       select.selectAll("option")
+            .data(nodeList)
+            .enter()
+            .append("option")
+            .attr("value", function (d) { return d; })
+            .text(function (d) { return d; });
         d3.json("data/years/aggregateNetwork_" + y1 + "_" + y2 + "_filtered.json", function (data_1) {
             d3.json("data/years/aggregateNetwork_" + y3 + "_" + y4 + "_filtered.json", function (data_2) {
                 meta_info = meta_data;
@@ -825,30 +836,3 @@ var populateNodeList = function(meta_data,nodeList) {
         nodeList.push(node.title);
     }
 }
-
-
-
-d3.json("meta.json", function(error, data) {
-       var select = d3.select("#mylist")
-        var nodeList = [];
-    
-        populateNodeList(data,nodeList)
-        
-       /*
-       select()
-       .on("change", function(d) {
-           var value = d3.select(this).property("value");
-           alert(value);
-           });
-        */
-       
-       console.log("In d3 csv !!")
-       console.log(nodeList)
-       
-       select.selectAll("option")
-       .data(nodeList)
-       .enter()
-       .append("option")
-       .attr("value", function (d) { return d; })
-       .text(function (d) { return d; });
-       });
