@@ -44,8 +44,7 @@ var s1 = new sigma({
         maxNodeSize: 8,
         minEdgeSize: 0,
         maxEdgeSize: 8,
-        defaultEdgeType : 'curve'
-    }
+        defaultEdgeType : 'curvedArrow'    }
 });
 
 var s2 = new sigma({
@@ -59,7 +58,7 @@ var s2 = new sigma({
         maxNodeSize: 8,
         minEdgeSize: 0,
         maxEdgeSize: 8,
-        defaultEdgeType : 'curve'
+        defaultEdgeType : 'curvedArrow'
     }
 });
 
@@ -86,6 +85,14 @@ function quantile_nodes(array, percentile) {
 var sigmaplot = function (graph, remove_edges) {
     var nodes_list = graph['nodes'],
         edges_list = graph['edges'];
+
+    var nodes_with_edges = {};
+    $.each(edges_list, function(index, edge){
+        nodes_with_edges[edge.source] = 1;
+        nodes_with_edges[edge.target] = 1;
+    });
+
+    nodes_list = nodes_list.filter(node => nodes_with_edges[node.id]);
 
     var sorted_nodes = nodes_list.slice(0).sort(function (a, b) { return b.betweenness_centrality - a.betweenness_centrality; });
     var top10 = quantile_nodes(sorted_nodes, 10);
@@ -124,7 +131,7 @@ var sigmaplot = function (graph, remove_edges) {
     var filter = new sigma.plugins.filter(s);
     filter.undo('edgefilt').undo('nodefilt').apply();
     filter.edgesBy(function (e) {
-        return e.weight > 100;
+        return e.weight > 100 && e.source != e.target;
     }, 'edgefilt').apply();
 
     console.log(
@@ -145,22 +152,24 @@ var sigmaplot = function (graph, remove_edges) {
         node.size = node.betweenness_centrality;
         node.betweenness = node.betweenness_centrality;
         node.clicked = 0;
-        substr = node['id'].substring(1);
+        substr = node['nodeid'];
         if (substr in meta_info) {
             node.latitude = meta_info[substr]['latitude'];
             if(node.latitude == 'None') node.latitude = 0;
             node.latitude = -node.latitude;
             node.longitude = meta_info[substr]['longitude'];
             if(node.longitude == 'None') node.longitude = 0;
-            node.color = colorCountry(meta_info[substr]['country']);
-            node.orig_color =  colorCountry(meta_info[substr]['country']);
+            node.CountryColor = colorCountry(meta_info[substr]['country']);
+            node.color = node.CountryColor;
+            node.orig_color = node.color;
         }
         else {
             node.hidden = true;
             node.latitude = 0;
             node.longitude = 0;
-            node.color = '#fff';
-            node.orig_color = '#fff';
+            node.CountryColor = '#ffffff';
+            node.color = '#ffffff';
+            node.orig_color = '#ffffff';
         }
         node.longitude = (node.longitude + 180.0);
         lat = node.latitude * Math.PI/180;
@@ -195,7 +204,6 @@ var sigmaplot = function (graph, remove_edges) {
         });
     }
     
-
     $('#edgefilt').on('input', function(e) {
         var val = parseInt($('#edgefilt').val());
         filter.undo('edgefilt').edgesBy(function (e) {
@@ -226,12 +234,10 @@ var sigmaplot = function (graph, remove_edges) {
 
     $('#circularLayout').on('click', function (e) {
         s.graph.nodes().forEach(function (node, i, a) {
-            node.x = Math.cos(Math.PI * 2 * i / a.length);
-            node.y = Math.sin(Math.PI * 2 * i / a.length);
+            node.x = (1 + Math.random()/4) * Math.cos(Math.PI * 2 * i / a.length);
+            node.y = (1 + Math.random()/4) * Math.sin(Math.PI * 2 * i / a.length);
         });
-        s.cameras[0].goTo({
-            x : 0, y : 0, ratio : 1, angle : 0
-        });
+        centerNodes(1);
         s.refresh();
     });
 
@@ -240,9 +246,7 @@ var sigmaplot = function (graph, remove_edges) {
             node.x = node.orig_x;
             node.y = node.orig_y;
         });
-        s.cameras[0].goTo({
-            x : 0, y : 0, ratio : 1, angle : 0
-        });
+        centerNodes(1);
         s.refresh();
     });
 
@@ -251,9 +255,7 @@ var sigmaplot = function (graph, remove_edges) {
         s.graph.nodes().forEach(function (node, i, a) {
             node.x = node[field];
         });
-        s.cameras[0].goTo({
-            x : 0, y : 0, ratio : 1, angle : 0
-        });
+        centerNodes(1);
         s.refresh();
     });
 
@@ -262,13 +264,12 @@ var sigmaplot = function (graph, remove_edges) {
         s.graph.nodes().forEach(function (node, i, a) {
             node.y = node[field];
         });
-        s.cameras[0].goTo({
-            x : 0, y : 0, ratio : 1, angle : 0
-        });
+        centerNodes(1);
         s.refresh();
     });
 
     $('#nodeWeight').on('click', function (e) {
+        console.log('clicked weight');
         s.graph.nodes().forEach(function (node, i, a) {
             var n1 = s1.graph.nodes(node.id);
             var n2 = s2.graph.nodes(node.id);
@@ -283,9 +284,24 @@ var sigmaplot = function (graph, remove_edges) {
             node.diff = c2 - c1;
         });
         var ext = d3.extent(s.graph.nodes(), function (d) { return Math.abs(d.diff); });
-        var x = d3.scaleLinear().domain(ext).nice().range([0.7, 1.]);
+        var x = d3.scaleLinear().domain(ext).nice().range([0.5, 1.]);
         $.each(s.graph.nodes(), function(index, node) {
-            node.color = colorconvert(node.orig_color, x(Math.abs(node.diff)));
+            c = '#006400';
+            if(node.diff < 0) {
+                c = '#640000';
+            }
+            node.BetColor = colorconvert(c, x(Math.abs(node.diff)));
+            node.color = colorconvert(node.CountryColor, x(Math.abs(node.diff)));
+            node.orig_color = node.color ; 
+            node.CountryColor = node.color;
+        });
+        s.refresh();
+    });
+
+    $('#nodeColor').on('change', function(e){
+        var field = $('#nodeColor').val();
+        $.each(s.graph.nodes(), function(index, node){
+            node.color = node[field];
             node.orig_color = node.color;
         });
         s.refresh();
@@ -300,9 +316,29 @@ var sigmaplot = function (graph, remove_edges) {
         }
         else {
             filter.undo('nodefilt').nodesBy(function (n) {
-                substr = n.id.substring(1);
+                substr = n.nodeid;
                 if (substr in meta_info) {
                     return meta_info[substr]['country'] == valueSelected;
+                }
+                return false;
+            }, 'nodefilt').apply();
+        }
+        centerNodes(1);
+        s.refresh();
+    });
+
+    $('#nodenormplace').on('click', function(e){
+        var val = $('#selectnormplace').val();
+        if(val == '') {
+            filter.undo('nodefilt').nodesBy(function (n) {
+                return true;
+            }, 'nodefilt').apply();
+        }
+        else {
+            filter.undo('nodefilt').nodesBy(function(n){
+                substr = n.nodeid;
+                if (substr in meta_info) {
+                    return meta_info[substr]['normplace'] == val;
                 }
                 return false;
             }, 'nodefilt').apply();
@@ -428,9 +464,9 @@ var clickedNode = function (s, node_id) {
 
     });
 
-    node.color = '#0ff';
+    node.color = '#f00';
     var node_info = [];
-    substr = node['id'].substring(1)
+    substr = node['nodeid'];
     if (substr in meta_info) {
         var info = meta_info[substr];
         for (var i in info) {
@@ -677,6 +713,7 @@ var plotbarChart = function () {
 /////////////////////////////////////////////////////////////////////////////////////////////
 var parseMetaInfo = function(meta_data) {
     meta_uniques['country'] = [];
+    meta_uniques['normplace'] = [];
     countries = {};
     for(var i in meta_data) {
         node = meta_data[i];
@@ -695,30 +732,34 @@ var parseMetaInfo = function(meta_data) {
             countries[node.country].long += long;
         }
         countries[node.country].n += 1;
+        if(!meta_uniques['normplace'].includes(node.normplace)){
+            meta_uniques['normplace'].push(node.normplace);
+        }
     }
     $.each(meta_uniques['country'], function (index, value) {
         countries[value].lat /= countries[value].n;
         countries[value].long /= countries[value].n;
-        
-        $('#selectRegion').append($('<option/>', { 
-            value: value,
-            text : value 
-        }));
     }); 
-    console.log(countries);
 }
 
 var append_meta_info = function (graph, meta_data) {
     var nodes = graph['nodes'];
     for (var key in nodes) {
         node = nodes[key];
-        if (node['id'].substring(1) in meta_data) {
-            node['label'] = meta_data[node['id'].substring(1)]['title'];
+        if (node['nodeid'] in meta_data) {
+            node['label'] = meta_data[node['nodeid']]['title'];
         }
         else {
             node['label'] = node['id'];
         }
+        
     }
+}
+
+var emptySigma = function() {
+    s1.graph.clear();
+    s2.graph.clear();
+    $('#widgets, #widgets *').off();
 }
 
 $('#year-button-1').on('click', function (e) {
@@ -726,19 +767,19 @@ $('#year-button-1').on('click', function (e) {
     var y2 = document.getElementById('year-end-1').value;
     var y3 = document.getElementById('year-begin-2').value;
     var y4 = document.getElementById('year-end-2').value;
-    d3.json("meta.json", function (meta_data) {
-        d3.json(y1 + "-" + y2 + "_betweenness.json", function (data_1) {
-            d3.json(y3 + "-" + y4 + "_betweenness.json", function (data_2) {
+    d3.json("data/meta.json", function (meta_data) {
+        d3.json("data/years/aggregateNetwork_" + y1 + "_" + y2 + "_filtered.json", function (data_1) {
+            d3.json("data/years/aggregateNetwork_" + y3 + "_" + y4 + "_filtered.json", function (data_2) {
                 meta_info = meta_data;
                 parseMetaInfo(meta_data);
                 append_meta_info(data_1, meta_data);
                 append_meta_info(data_2, meta_data);
-                s1.graph.clear();
-                s2.graph.clear();
+                emptySigma();
                 sigmaplot(data_1, true);
                 sigmaplot(data_2, false);
                 $('#nodeWeight').click();
                 plotbarChart();
+                
             });
         });
     });

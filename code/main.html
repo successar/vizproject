@@ -37,37 +37,53 @@
                                     <h4 class="modal-title" id="myModalLabel">Widgets</h4>
                                 </div>
                 
-                                <div class="modal-body">
+                                <div class="modal-body" id="widgets">
                                     <form>
                                         <div class="form-group">
                                             <label for="edgefilt">Edge Filter : </label>
                                             <input class="form-control" type="text" id="edgefilt" value="100"/>
                                         </div>
                                         <div class="form-group">
-                                            <label for="selectRegion">Select Region : </label>
-                                            <select id="selectRegion">
-                                                <option value="None">Choose a Region</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
                                             <label for="nodesearch">Search : </label>
                                             <input class="form-control" type="text" id="nodesearch" value=""/> 
                                             <button type="button" id="nodesearchbutton">Search Paper</button>
-                                        </div>  
+                                        </div> 
+                                        <div class="form-group">
+                                            <label for="selectnormplace">Search : </label>
+                                            <input class="form-control" type="text" id="selectnormplace" value=""/> 
+                                            <button type="button" id="nodenormplace">Search City</button>
+                                        </div> 
+                                        <div class="form-group">
+                                            <label for="selectRegion">Select Region : </label>
+                                            <select id="selectRegion">
+                                                <option value="None">Choose a Region</option>
+                                                <option value="US">US</option>
+                                                <option value="UK">UK</option>
+                                                <option value="EU">EU</option>
+                                                <option value="AU">AU</option>
+                                            </select>
+                                        </div>
                                     </form>
+                                    <hr/>
                                     <form>
                                         <div class="form-group">
                                             <button type="button" id="startForce">Start Force Layout</button>
                                             <button type="button" id="endForce">End Force Layout</button>  
                                             <button type="button" id="circularLayout">Show Circular Layout</button> 
                                             <button type="button" id="geographicLayout">Show Geographic Layout</button> 
-                                            <button type="button" id="resetLayout">Reset Layout</button>  
+                                            <button type="button" id="resetLayout">Reset Original Layout</button>  
                                         </div>
+                                        <hr/>
                                         <div class="form-group">
+                                            <label for="nodeColor">Color Node By</label>
+                                            <select id="nodeColor">
+                                                <option value="BetColor">Betweenness Change</option>
+                                                <option value="CountryColor">Country</option>
+                                            </select>
                                             <button type="button" id="nodeWeight" class="hidden">Show Node Betweenness</button> 
                                         </div>  
                                         <div class="form-group">
-                                            <label for="X">X</label>
+                                            <label for="X">X axis</label>
                                             <select id="x">
                                                 <option value="longitude">Longitude</option>
                                                 <option value="orig_x" selected="true">X</option>
@@ -75,7 +91,7 @@
                                             </select>  
                                         </div>
                                         <div class="form-group">
-                                            <label for="Y">Y</label>                                            
+                                            <label for="Y">Y axis</label>                                            
                                             <select id="y">
                                                 <option value="latitude">Latitude</option>
                                                 <option value="orig_y" selected="true">Y</option>
@@ -90,15 +106,17 @@
                     </div><!-- modal -->
                     <div class="row" style="margin : 10px">
                         <div class="col-md-6 col-sm-6 col-xs-6">
-                            <button type="button" class="btn btn-demo" data-toggle="modal" data-target="#myModal">
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
                                     Open Widgets
                                 </button>
-                            <button type="button" class="btn btn-demo" id="sidebarCollapse">
+                            <button type="button" class="btn btn-info" id="sidebarCollapse">
                                     Open Information
                             </button>    
                             <button type="button" class="btn btn-demo" id="sidebarCollapse2">
                                     Open Centrality Info
                             </button>  
+                            <button type="button" class="btn btn-success" id="year-button-1">Plot Graphs</button>
+                            
                         </div>
                     </div>
                     <div class="row">
@@ -113,13 +131,10 @@
                                         <label for="year-end-1">End year : <span id='ey1text'>1845</span></label>
                                         <input class="form-control" type="range" id="year-end-1" min="1836" max="1899" step="1" value="1845" oninput="updateYearText(this.value, 'ey1text');"/>
                                     </div>
-                                    <div class="col-md-2 col-sm-2 col-xs-2 form-group">
-                                        <button type="button" id="year-button-1">Update</button>
-                                    </div>
                                 </form>
                             </div>
                             <div class="row">
-                                <div id="container-1"></div>
+                                <div id="container-1" style="border-right: 1px solid black; margin-right : 2px;"></div>
                             </div>
                         </div>
                         <div class="col-md-6 col-sm-6 col-xs-6">
@@ -136,7 +151,7 @@
                                 </form>
                             </div>
                             <div class="row">
-                                <div id="container-2"></div>
+                                <div id="container-2" style="margin-right : 2px;"></div>
                             </div>
                         </div>
                     </div>
