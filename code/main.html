@@ -22,6 +22,7 @@
         <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>        
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         <link href="vizproject.css" rel="stylesheet" type="text/css"/>
+        <link rel="stylesheet" href="awesomplete.css" />
     </head>
     <body>
         <div class="wrapper">
@@ -63,6 +64,13 @@
                                                 <option value="AU">AU</option>
                                             </select>
                                         </div>
+                                        <div class="form-group">
+                                            <label for="nodesearch">Search : </label>
+                                            <!--<input class="form-control" type="text" id="nodesearch" value=""/>-->
+                                            <input class="awesomplete" list="mylist" id="nodesearch"/>
+                                            <datalist id="mylist"></datalist>
+                                            <button type="button" id="nodesearchbutton">Search Paper</button>
+                                        </div>  
                                     </form>
                                     <hr/>
                                     <form>
@@ -204,8 +212,8 @@
         <script src="../sigma.js/build/plugins/sigma.layout.forceAtlas2.min.js"></script>
         <script src="../sigma.js/build/plugins/sigma.plugins.filter.js"></script>
         <script src="../sigma.js/build/plugins/sigma.layout.noverlap.min.js"></script>
-        <script src="vizproject.js">  
-            
+        <script src="vizproject.js">
         </script>
+        <script src="awesomplete.js" async></script>
     </body>
 </html>

@@ -818,3 +818,37 @@ $(document).ready(function () {
     });
 
 });
+
+var populateNodeList = function(meta_data,nodeList) {
+    for(var i in meta_data) {
+        node = meta_data[i];
+        nodeList.push(node.title);
+    }
+}
+
+
+
+d3.json("meta.json", function(error, data) {
+       var select = d3.select("#mylist")
+        var nodeList = [];
+    
+        populateNodeList(data,nodeList)
+        
+       /*
+       select()
+       .on("change", function(d) {
+           var value = d3.select(this).property("value");
+           alert(value);
+           });
+        */
+       
+       console.log("In d3 csv !!")
+       console.log(nodeList)
+       
+       select.selectAll("option")
+       .data(nodeList)
+       .enter()
+       .append("option")
+       .attr("value", function (d) { return d; })
+       .text(function (d) { return d; });
+       });
