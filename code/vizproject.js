@@ -299,7 +299,6 @@ var sigmaplot = function (graph, remove_edges) {
     });
 
     $('#nodeWeight').on('click', function (e) {
-        console.log('clicked weight');
         s.graph.nodes().forEach(function (node, i, a) {
             var n1 = s1.graph.nodes(node.id);
             var n2 = s2.graph.nodes(node.id);
@@ -357,6 +356,7 @@ var sigmaplot = function (graph, remove_edges) {
         s.refresh();
         centerNodes(1);
         s.refresh();
+        plotbarChart();
     });
 
     $('#nodenormplace').on('click', function(e){
@@ -379,6 +379,7 @@ var sigmaplot = function (graph, remove_edges) {
         s.refresh();
         centerNodes(1);
         s.refresh();
+        plotbarChart();        
     });
 
 
@@ -398,6 +399,7 @@ var sigmaplot = function (graph, remove_edges) {
         }
         appendInfoList(innodes1, innodes2, outnodes1, outnodes2);
         clickedNodeId = node.data.node.id;
+        $('#sidebarCollapse').click();
         s1.refresh();
         s2.refresh();
     });
@@ -422,6 +424,9 @@ var sigmaplot = function (graph, remove_edges) {
         so.renderers[0].dispatchEvent('outNode', { node: so.graph.nodes(node.data.node.id), recurse: false });
 
     });
+
+    centerNodes(1);
+    s.refresh();
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -460,7 +465,6 @@ var clickedNode = function (s, node_id) {
 
     if (typeof node == 'undefined') { return [{}, {}, {}]; }
     node.clicked = true;
-    console.log(node['renderer1:x'], node['renderer1:y'])
     var neighbors = {};
     var edges = s.graph.nodeEdges(node);
     var sorted = [];
@@ -555,7 +559,6 @@ var appendInfoList = function (innodes1, innodes2, outnodes1, outnodes2, top1, t
     var insort1 = getTopN(innodes1, 5), insort2 = getTopN(innodes2, 5);
     var outsort1 = getTopN(outnodes1, 5), outsort2 = getTopN(outnodes2, 5);
 
-    console.log(insort1, insort2);
     s1.graph.nodes().forEach(function (node_p, i, a) {
         if (innodes1[node_p.id]) {
             var node_class = 'nodeinone';
@@ -637,14 +640,8 @@ var margin = {
     bottom: 0,
     left: 0
 },
-    width = width_chart - margin.left - margin.right,
-    height = height_chart - margin.top - margin.bottom;
-
-var svg = d3.select("#chart").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g");
-//.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+width = width_chart - margin.left - margin.right,
+height = height_chart - margin.top - margin.bottom;
 
 function quantile(array, percentile) {
     index = percentile / 100. * (array.length - 1);
@@ -664,21 +661,25 @@ var plotbarChart = function () {
     var nodes = {};
     for (var i in n1) {
         n = n1[i];
-        nodes[n.id] = { 'id': n.id };
-        nodes[n.id].bc1 = n.betweenness_centrality;
-        nodes[n.id].bc2 = 0;
-        nodes[n.id].in = 0;
+        if(!n.hidden) {
+            nodes[n.id] = { 'id': n.id };
+            nodes[n.id].bc1 = n.betweenness_centrality;
+            nodes[n.id].bc2 = 0;
+            nodes[n.id].in = 0;
+        }
     }
     for (var i in n2) {
         n = n2[i];
-        if (nodes[n.id]) {
-            nodes[n.id].bc2 = n.betweenness_centrality;
-        }
-        else {
-            nodes[n.id] = { 'id': n.id };
-            nodes[n.id].bc2 = n.betweenness_centrality;
-            nodes[n.id].bc1 = 0;
-            nodes[n.id].in = 1;
+        if(!n.hidden) {
+            if (nodes[n.id]) {
+                nodes[n.id].bc2 = n.betweenness_centrality;
+            }
+            else {
+                nodes[n.id] = { 'id': n.id };
+                nodes[n.id].bc2 = n.betweenness_centrality;
+                nodes[n.id].bc1 = 0;
+                nodes[n.id].in = 1;
+            }
         }
     }
     for (var i in nodes) {
@@ -692,6 +693,12 @@ var plotbarChart = function () {
     var bottom10 = nodes.filter(d => d.diff < quantile(nodes, 90));
     var nodes = top10.concat(bottom10);
     //var nodes = nodes.slice(0, 40).concat(nodes.slice(nodes.length - 40, nodes.length));
+
+    $('#chart').html('');
+    var svg = d3.select("#chart").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g");
 
     var ext = d3.extent(nodes, function (d) { return Math.abs(d.diff); });
     var x = d3.scaleLinear().domain(ext).nice().range([0, width]);
@@ -801,6 +808,8 @@ var emptySigma = function() {
 }
 
 $('#year-button-1').on('click', function (e) {
+    $('#spin').addClass('spinner');
+    resetForms();
     var y1 = document.getElementById('year-begin-1').value;
     var y2 = document.getElementById('year-end-1').value;
     var y3 = document.getElementById('year-begin-2').value;
@@ -827,6 +836,7 @@ $('#year-button-1').on('click', function (e) {
                 sigmaplot(data_2, false);
                 $('#nodeWeight').click();
                 plotbarChart();
+                $('#spin').removeClass('spinner');
                 
             });
         });
@@ -842,10 +852,11 @@ function updateYearText(val, textbox) {
 }
 
 $(document).ready(function () {
+    resetForms();
     $('#sidebarCollapse').on('click', function () {
         $('#vertexinfo').removeClass('hidden');
         $('#chartArea').addClass('hidden');
-        $('#sidebarInfo').toggleClass('active');
+        $('#sidebarInfo').removeClass('active');
         s1.refresh();
         s2.refresh();
     });
@@ -853,13 +864,19 @@ $(document).ready(function () {
     $('#sidebarCollapse2').on('click', function () {
         $('#vertexinfo').addClass('hidden');
         $('#chartArea').removeClass('hidden');
-        $('#sidebarInfo').toggleClass('active');
+        $('#sidebarInfo').removeClass('active');
         s1.refresh();
         s2.refresh();
     });
 
     $('#sidebarCollapseClose').on('click', function () {
-        $('#sidebarInfo').toggleClass('active');
+        $('#sidebarInfo').addClass('active');
+        s1.refresh();
+        s2.refresh();
+    });
+
+    $('#sidebarCollapseClose2').on('click', function () {
+        $('#sidebarInfo').addClass('active');
         s1.refresh();
         s2.refresh();
     });
@@ -870,5 +887,12 @@ var populateNodeList = function(meta_data,nodeList) {
     for(var i in meta_data) {
         node = meta_data[i];
         nodeList.push(node.title);
+    }
+}
+
+function resetForms() {
+    forms = $('#myModal form');
+    for (i = 0; i < forms.length; i++) {
+        forms[i].reset();
     }
 }
