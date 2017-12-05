@@ -158,7 +158,7 @@ var sigmaplot = function (graph, remove_edges) {
         total_length = 0;
         if (node.centrality_group == 1) { total_length = iout; }
         else { total_length = iin; }
-        radius += Math.random() / 4;
+        //radius += Math.random() / 4;
         node.x = radius * Math.cos(Math.PI * 2 * node.i / total_length);
         node.y = radius * Math.sin(Math.PI * 2 * node.i / total_length);
         node.orig_x = node.x;
@@ -256,8 +256,19 @@ var sigmaplot = function (graph, remove_edges) {
 
     $('#circularLayout').on('click', function (e) {
         s.graph.nodes().forEach(function (node, i, a) {
-            node.x = (1 + Math.random()/4) * Math.cos(Math.PI * 2 * i / a.length);
-            node.y = (1 + Math.random()/4) * Math.sin(Math.PI * 2 * i / a.length);
+            node.x = (1) * Math.cos(Math.PI * 2 * i / a.length);
+            node.y = (1) * Math.sin(Math.PI * 2 * i / a.length);
+        });
+        centerNodes(1);
+        s.refresh();
+        centerNodes(1);
+        s.refresh();
+    });
+
+    $('#jitterLayout').on('click', function(e){
+        s.graph.nodes().forEach(function (node, i, a) {
+            node.x = node.x + Math.random()/5;
+            node.y = node.y + Math.random()/5;
         });
         centerNodes(1);
         s.refresh();
@@ -312,17 +323,34 @@ var sigmaplot = function (graph, remove_edges) {
             
             node.diff = c2 - c1;
         });
-        var ext = d3.extent(s.graph.nodes(), function (d) { return Math.abs(d.diff); });
-        var x = d3.scaleLinear().domain(ext).nice().range([0.5, 1.]);
+
+        var nodes = s.graph.nodes();
+        nodes.sort(function (a, b) { return b.diff - a.diff; });
+    
+        var top10 = nodes.filter(d => d.diff > quantile(nodes, 10));
+        var bottom10 = nodes.filter(d => d.diff < quantile(nodes, 90));
+
+        // var ext = d3.extent(s.graph.nodes(), function (d) { return d.diff; });
+        // //var x = d3.scaleSequential(d3.interpolateRgbBasis(["#40004b", "#762a83", "#bf812d", "#bf812d", "#1b7837", "#00441b"])).domain(ext);
+        // var x = d3.scaleSequential(function(t){
+        //     if(t < 0.2) return "#762a83";
+        //     else if (t > 0.8) return "#1b7837";
+        //     else return "#bf812d";
+        // }).domain(ext);
+        var top10 = top10.map(d => d.id);
+        var bottom10 = bottom10.map(d => d.id);
+
         $.each(s.graph.nodes(), function(index, node) {
-            c = '#006400';
-            if(node.diff < 0) {
-                c = '#640000';
+            if(top10.includes(node.id)) {
+                node.BetColor = "#1b7837";
             }
-            node.BetColor = colorconvert(c, x(Math.abs(node.diff)));
-            node.color = colorconvert(node.CountryColor, x(Math.abs(node.diff)));
-            node.orig_color = node.color ; 
-            node.CountryColor = node.color;
+            else if(bottom10.includes(node.id)) {
+                node.BetColor = "#762a83";
+            }
+            else {
+                node.BetColor = "#bf812d";
+            }
+
         });
         s.refresh();
     });

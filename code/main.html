@@ -42,8 +42,8 @@
                                 <div class="modal-body" id="widgets">
                                     <form class="widgets">
                                         <div class="form-group">
-                                            <label for="edgefilt">Edge Filter : </label>
-                                            <input class="form-control" type="text" id="edgefilt" value="100"/>
+                                            <label for="edgefilt">Edge Filter : <span id='edgefilttext'>100</span></label>
+                                            <input class="form-control" type="range" id="edgefilt" min="10" max="10000" step="10" value="100" oninput="updateYearText(this.value, 'edgefilttext');"/>
                                         </div>
                                         <div class="form-group">
                                             <label for="selectnormplace">Search : </label>
@@ -121,6 +121,8 @@
                             <button type="button" class="btn btn-demo" id="sidebarCollapse2">
                                     Open Centrality Info
                             </button>  
+                            <button type="button" class="btn btn-demo"  id="jitterLayout">Jitter Layout</button> 
+                            
                             <button type="button" class="btn btn-success" id="year-button-1">Plot Graphs</button>
                         </div>
                         <div class="col-md-6 col-sm-6 col-xs-6">
@@ -210,6 +212,8 @@
         </div>
         
         <script src="https://d3js.org/d3.v4.min.js"></script>
+        <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+        <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
         <script src="../sigma.js/build/sigma.min.js"></script>
         <script src="../sigma.js/build/plugins/sigma.layout.forceAtlas2.min.js"></script>
         <script src="../sigma.js/build/plugins/sigma.plugins.filter.js"></script>

@@ -30,11 +30,11 @@
 }
 
 .bar.positive {
-    fill : green;    
+    fill : #1b7837;    
   }
 
 .bar.negative {
-    fill: darkred;
+    fill: #762a83;
 }
 
 .hidden {
