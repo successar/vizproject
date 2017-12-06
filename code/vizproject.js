@@ -478,6 +478,7 @@ $('#nodesearchbutton').on('click', function (e) {
             s2.renderers[0].dispatchEvent('clickNode', { node: selected_node });
             return;
         }
+        alert('Paper ' + val + ' not found in given periods');
     }
 });
 
