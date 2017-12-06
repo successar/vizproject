@@ -330,13 +330,6 @@ var sigmaplot = function (graph, remove_edges) {
         var top10 = nodes.filter(d => d.diff > quantile(nodes, 10));
         var bottom10 = nodes.filter(d => d.diff < quantile(nodes, 90));
 
-        // var ext = d3.extent(s.graph.nodes(), function (d) { return d.diff; });
-        // //var x = d3.scaleSequential(d3.interpolateRgbBasis(["#40004b", "#762a83", "#bf812d", "#bf812d", "#1b7837", "#00441b"])).domain(ext);
-        // var x = d3.scaleSequential(function(t){
-        //     if(t < 0.2) return "#762a83";
-        //     else if (t > 0.8) return "#1b7837";
-        //     else return "#bf812d";
-        // }).domain(ext);
         var top10 = top10.map(d => d.id);
         var bottom10 = bottom10.map(d => d.id);
 
@@ -593,6 +586,7 @@ var appendInfoList = function (innodes1, innodes2, outnodes1, outnodes2, top1, t
             if (innodes2[node_p.id]) { node_class = 'nodeboth'; }
             var li = '<li class="' + node_class + '" onmouseover="hoverOverNode_s1' + '(\'' + node_p.id + '\')"'
                 + ' onmouseout="hoverOutNode_s1' + '(\'' + node_p.id + '\')"'
+                + ' onclick="clickOnNode_s1'  + '(\'' + node_p.id + '\')"'                
                 + '>' + node_p.label + '</li>';
             if (insort1.includes(node_p.id) || insort2.includes(node_p.id)) {
                 nodes_connected_incoming.unshift(li);
@@ -606,6 +600,7 @@ var appendInfoList = function (innodes1, innodes2, outnodes1, outnodes2, top1, t
             if (outnodes2[node_p.id]) { node_class = 'nodeboth'; }
             var li = '<li class="' + node_class + '" onmouseover="hoverOverNode_s1' + '(\'' + node_p.id + '\')"'
                 + ' onmouseout="hoverOutNode_s1' + '(\'' + node_p.id + '\')"'
+                + ' onclick="clickOnNode_s1'  + '(\'' + node_p.id + '\')"'                
                 + '>' + node_p.label + '</li>';
             nodes_connected_outgoing.push(li);
         }
@@ -616,6 +611,7 @@ var appendInfoList = function (innodes1, innodes2, outnodes1, outnodes2, top1, t
             node_class = 'nodeintwo';
             var li = '<li class="' + node_class + '" onmouseover="hoverOverNode_s2' + '(\'' + node_p.id + '\')"'
                 + ' onmouseout="hoverOutNode_s2' + '(\'' + node_p.id + '\')"'
+                + ' onclick="clickOnNode_s2'  + '(\'' + node_p.id + '\')"'                
                 + '>' + node_p.label + '</li>';
             if (insort2.includes(node_p.id)) {
                 nodes_connected_incoming.unshift(li);
@@ -628,6 +624,7 @@ var appendInfoList = function (innodes1, innodes2, outnodes1, outnodes2, top1, t
             node_class = 'nodeintwo';
             var li = '<li class="' + node_class + '" onmouseover="hoverOverNode_s2' + '(\'' + node_p.id + '\')"'
                 + ' onmouseout="hoverOutNode_s2' + '(\'' + node_p.id + '\')"'
+                + ' onclick="clickOnNode_s2'  + '(\'' + node_p.id + '\')"'
                 + '>' + node_p.label + '</li>';
             nodes_connected_outgoing.push(li);
         }
@@ -659,6 +656,17 @@ var hoverOutNode_s2 = function (node_id) {
     s2.renderers[0].dispatchEvent('outNode', { node: n1 });
 }
 
+var clickOnNode_s1 = function(node_id) {
+    var n1 = s1.graph.nodes(node_id);
+    s1.renderers[0].dispatchEvent('outNode', { node: n1 });    
+    s1.renderers[0].dispatchEvent('clickNode', { node: n1 });
+}
+
+var clickOnNode_s2 = function(node_id) {
+    var n1 = s2.graph.nodes(node_id);
+    s2.renderers[0].dispatchEvent('outNode', { node: n1 });        
+    s2.renderers[0].dispatchEvent('clickNode', { node: n1 });
+}
 //////////////////////////////////////////////////////////////////////////////////////////////
 var width_chart = $('#chart').width();
 var height_chart = 1500; //$('#chart').height();
