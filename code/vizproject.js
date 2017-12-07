@@ -23,8 +23,7 @@ sigma.classes.graph.addMethod('nodeEdges', function (node) {
     return edges;
 });
 
-var colorCountry = d3.scaleOrdinal(d3.schemeCategory10);
-var selectColor = colorCountry('selectColor');
+var colorCountry = d3.scaleOrdinal(["#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#000000"]);
 function colorconvert(color, transparency) {
     var r = parseInt(color.substring(1,3),16);
     var g = parseInt(color.substring(3,5),16);
@@ -425,7 +424,7 @@ var sigmaplot = function (graph, remove_edges) {
         s2.refresh();
     });
 
-    s.bind("rightClickNode", function (node) {
+    s.bind("clickStage", function (node) {
         UnclickedNode(s, clickedNodeId);
         UnclickedNode(so, clickedNodeId);
         s1.refresh();
@@ -524,6 +523,9 @@ var clickedNode = function (s, node_id) {
         if (neighbors[node_p.id]) {
             node_p.color = '#00f';
         }
+        else {
+            node_p.color = '#ddd';
+        }
 
     });
 
@@ -558,9 +560,7 @@ var UnclickedNode = function (s, node_id) {
     }
     node.color = node.orig_color;
     s.graph.nodes().forEach(function (node_p, i, a) {
-        if (neighbors[node_p.id] && !node_p.clicked) {
-            node_p.color = node_p.orig_color;
-        }
+        node_p.color = node_p.orig_color;
     });
     s.refresh();
 }
@@ -583,12 +583,12 @@ var appendInfoList = function (innodes1, innodes2, outnodes1, outnodes2, top1, t
 
     s1.graph.nodes().forEach(function (node_p, i, a) {
         if (innodes1[node_p.id]) {
-            var node_class = 'nodeinone';
-            if (innodes2[node_p.id]) { node_class = 'nodeboth'; }
-            var li = '<li class="' + node_class + '" onmouseover="hoverOverNode_s1' + '(\'' + node_p.id + '\')"'
+            var node_class = '-';
+            if (innodes2[node_p.id]) { node_class = 'o'; }
+            var li = '<li onmouseover="hoverOverNode_s1' + '(\'' + node_p.id + '\')"'
                 + ' onmouseout="hoverOutNode_s1' + '(\'' + node_p.id + '\')"'
                 + ' onclick="clickOnNode_s1'  + '(\'' + node_p.id + '\')"'                
-                + '>' + node_p.label + '</li>';
+                + '>' + '<b>' + node_class + '</b> ' + node_p.label + '</li>';
             if (insort1.includes(node_p.id) || insort2.includes(node_p.id)) {
                 nodes_connected_incoming.unshift(li);
             }
@@ -597,23 +597,23 @@ var appendInfoList = function (innodes1, innodes2, outnodes1, outnodes2, top1, t
             }
         }
         if (outnodes1[node_p.id]) {
-            var node_class = 'nodeinone';
-            if (outnodes2[node_p.id]) { node_class = 'nodeboth'; }
-            var li = '<li class="' + node_class + '" onmouseover="hoverOverNode_s1' + '(\'' + node_p.id + '\')"'
+            var node_class = '-';
+            if (outnodes2[node_p.id]) { node_class = 'o'; }
+            var li = '<li onmouseover="hoverOverNode_s1' + '(\'' + node_p.id + '\')"'
                 + ' onmouseout="hoverOutNode_s1' + '(\'' + node_p.id + '\')"'
                 + ' onclick="clickOnNode_s1'  + '(\'' + node_p.id + '\')"'                
-                + '>' + node_p.label + '</li>';
+                + '>' + '<b>' + node_class + '</b> ' + node_p.label + '</li>';
             nodes_connected_outgoing.push(li);
         }
     });
 
     s2.graph.nodes().forEach(function (node_p, i, a) {
         if (innodes2[node_p.id] && !innodes1[node_p.id]) {
-            node_class = 'nodeintwo';
-            var li = '<li class="' + node_class + '" onmouseover="hoverOverNode_s2' + '(\'' + node_p.id + '\')"'
+            node_class = '+';
+            var li = '<li onmouseover="hoverOverNode_s2' + '(\'' + node_p.id + '\')"'
                 + ' onmouseout="hoverOutNode_s2' + '(\'' + node_p.id + '\')"'
                 + ' onclick="clickOnNode_s2'  + '(\'' + node_p.id + '\')"'                
-                + '>' + node_p.label + '</li>';
+                + '>' + '<b>' + node_class + '</b> ' + node_p.label +  '</li>';
             if (insort2.includes(node_p.id)) {
                 nodes_connected_incoming.unshift(li);
             }
@@ -622,11 +622,11 @@ var appendInfoList = function (innodes1, innodes2, outnodes1, outnodes2, top1, t
             }
         }
         if (outnodes2[node_p.id] && !outnodes1[node_p.id]) {
-            node_class = 'nodeintwo';
-            var li = '<li class="' + node_class + '" onmouseover="hoverOverNode_s2' + '(\'' + node_p.id + '\')"'
+            node_class = '+';
+            var li = '<li onmouseover="hoverOverNode_s2' + '(\'' + node_p.id + '\')"'
                 + ' onmouseout="hoverOutNode_s2' + '(\'' + node_p.id + '\')"'
                 + ' onclick="clickOnNode_s2'  + '(\'' + node_p.id + '\')"'
-                + '>' + node_p.label + '</li>';
+                + '>' + '<b>' + node_class + '</b> ' + node_p.label + '</li>';
             nodes_connected_outgoing.push(li);
         }
     });
