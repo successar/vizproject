@@ -1,8 +1,7 @@
 /data
 **/*.txt
-/code/data
+/code/data/*
 !/code/data/aggregateNetwork_1840_1845_filtered.json
 !/code/data/aggregateNetwork_1844_1847_filtered.json
 !/code/data/aggregateNetwork_1850_1855_filtered.json
 !/code/data/aggregateNetwork_1854_1857_filtered.json
-
