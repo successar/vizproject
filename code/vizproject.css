@@ -23,6 +23,19 @@
     margin-right: -250px;
 }
 
+#bottombarInfo {
+    width : 100%;
+}
+
+#timeseries-chart {
+    width : 100%;
+}
+
+/* #bottombarInfo.active {
+    position:absolute;
+    margin-right: -250px;
+} */
+
 #content {
     width : 100%;
     min-height: 85vh;

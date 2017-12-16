@@ -1,3 +1,6 @@
+//import * as d3_timeseries from "d3_timeseries.js"
+console.log("Starting to load vizproject.js")
+
 sigma.classes.graph.addMethod('nodeEdges', function (node) {
     var edges = {};
     var nodes = {};
@@ -69,6 +72,16 @@ var meta_uniques = {};
 var countries = {};
 
 var clickedNodeId = '';
+
+var centralitiesNodeIdMap = {};
+var timeSeriesData = [];
+
+d3.json("data/centralitiesAcrossYears_5YrWindow_percentileRank.json",function(data){
+    
+    centralitiesNodeIdMap = data;
+    console.log("centralitiesNodeIdMap[n1] is ",centralitiesNodeIdMap["n1"]);
+    
+});
 
 function quantile_nodes(array, percentile) {
     index = percentile / 100. * (array.length - 1);
@@ -418,6 +431,7 @@ var sigmaplot = function (graph, remove_edges) {
             var innodes2 = nodes1[0], outnodes2 = nodes1[1];
         }
         appendInfoList(innodes1, innodes2, outnodes1, outnodes2);
+        modifyTimeseries(node.data.node.id);
         clickedNodeId = node.data.node.id;
         $('#sidebarCollapse').click();
         s1.refresh();
@@ -637,6 +651,31 @@ var appendInfoList = function (innodes1, innodes2, outnodes1, outnodes2, top1, t
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
+var modifyTimeseries = function (nodeId){
+ 
+    console.log("Current nodeId is ",nodeId);
+    
+    currTimeSeries = centralitiesNodeIdMap[nodeId];
+    console.log("Updating time series. original timeseries is ",timeSeriesData);
+    console.log("Now timeseries length is ",timeSeriesData.length);
+    while(timeSeriesData.length > 0) {
+        timeSeriesData.pop();
+    }
+    console.log("Clearing time series. Now timeseries length is ",timeSeriesData.length);
+    console.log("Clearing time series. now timeseries is ",timeSeriesData);
+    for (var i = 0; i< currTimeSeries.length; i++){
+        timeSeriesData.push({date:new Date((1836+i).toString()),n:currTimeSeries[i]});
+        //timeSeriesData.push({date:(1836+i),n:currTimeSeries[i]});
+    }
+    console.log("Updating time series. new timeseries is ",timeSeriesData);
+    console.log("Now timeseries length is ",timeSeriesData.length);
+    
+    $('#bottombarRefresh').click();
+    console.log($('#timeseries-chart svg').width());
+    $('#outer').width($('#timeseries-chart svg').width()+30);
+}
+
+
 var hoverOverNode_s1 = function (node_id) {
     var n1 = s1.graph.nodes(node_id);
     s1.renderers[0].dispatchEvent('overNode', { node: n1 });
@@ -854,7 +893,7 @@ $('#year-button-1').on('click', function (e) {
     d3.json("data/meta.json", function (meta_data) {
         var select = d3.select("#mylist")
         var nodeList = [];
-        populateNodeList(meta_data, nodeList)
+        populateNodeList(meta_data, nodeList);
        
        select.selectAll("option")
             .data(nodeList)
@@ -882,6 +921,8 @@ $('#year-button-1').on('click', function (e) {
 
 
 
+
+
 /////////////////////////////////////////////////////////////////////////
 
 function updateYearText(val, textbox) {
@@ -906,6 +947,12 @@ $(document).ready(function () {
         s2.refresh();
     });
 
+    // $('#centrality-button-1').on('click', function () {
+    //     $('#bottombarInfo').removeClass('hidden');
+    //     s1.refresh();
+    //     s2.refresh();
+    // });
+    
     $('#sidebarCollapseClose').on('click', function () {
         $('#sidebarInfo').addClass('active');
         s1.refresh();
@@ -917,6 +964,12 @@ $(document).ready(function () {
         s1.refresh();
         s2.refresh();
     });
+
+    // $('#sidebarCollapseClose3').on('click', function () {
+    //     $('#bottombarInfo').addClass('hidden');
+    //     s1.refresh();
+    //     s2.refresh();
+    // });
 
 });
 

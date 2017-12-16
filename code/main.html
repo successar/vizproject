@@ -24,6 +24,7 @@
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         <link href="vizproject.css" rel="stylesheet" type="text/css"/>
         <link rel="stylesheet" href="awesomplete.css" />
+        <link rel="stylesheet prefetch" href="d3_timeseries.min.css" />
     </head>
     <body>
         <div class="wrapper">
@@ -115,20 +116,36 @@
                             <button type="button" class="btn btn-demo"  id="jitterLayout">Jitter Layout</button> 
                             
                             <button type="button" class="btn btn-success" id="year-button-1">Plot Graphs</button>
+                            
                         </div>
                         <div class="col-md-6 col-sm-6 col-xs-6">
                                 <form>
-                                        <div class="form-group">
-                                            <label for="nodesearch">Search : </label>
-                                            <!--<input class="form-control" type="text" id="nodesearch" value=""/>-->
-                                            <input class="awesomplete" list="mylist" id="nodesearch" value=""/>
-                                            <datalist id="mylist"></datalist>
-                                            <button type="button" id="nodesearchbutton">Search Paper</button>
-                                        </div>  
-                                    </form>
+                                    <div class="form-group">
+                                        <label for="nodesearch">Search : </label>
+                                        <input class="awesomplete" list="mylist" id="nodesearch" value=""/>
+                                        <datalist id="mylist"></datalist>
+                                        <button type="button" id="nodesearchbutton">Search Paper</button>
+                                    </div>  
+                                </form>
                             <div id="spin"></div>
                         </div>
                             
+                    </div>
+                    <div id="bottombarInfo" class="modal fade">
+                        <div class="modal-dialog" id="outer">
+                            <div class="modal-content">
+                                <div id="bottomChartArea">
+                                    <div class="modal-header">
+                                        <button type="button" class="hidden" id="bottombarRefresh" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"></span></button>
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                        <h4 class="modal-title">Centrality Timeseries For Selected Node</h4>
+                                    </div>
+                                    <div class="modal-body" id="inner">
+                                        <div id="timeseries-chart"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 col-sm-6 col-xs-6">
@@ -171,6 +188,7 @@
                         
                     </div>
                 </div>
+                
             </div>
             <div id="sidebarInfo">
                 <div id="vertexinfo" class="hidden">
@@ -183,6 +201,7 @@
                         <p id="Label">
     
                         </p>
+                        <a href="#bottombarInfo" role="button" class="btn btn-large btn-primary" data-toggle="modal">Plot Centrality Timeseries</a>
                         <hr/>
                         <h4>Incoming</h4>
                         <p id="Incoming1">
@@ -211,6 +230,8 @@
             </div>
         </div>
         
+        
+        
         <script src="https://d3js.org/d3.v4.min.js"></script>
         <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
         <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
@@ -220,7 +241,37 @@
         <script src="sigma.js/build/plugins/sigma.layout.noverlap.min.js"></script>
         <script src="sigma.js/build/plugins/sigma.renderers.customShapes.min.js"></script>
 
+        <script src="d3_timeseries.min.js"></script>
         <script src="vizproject.js"></script>
+        <script>
+            $('#bottombarRefresh').on('click', function (e) {
+                /*
+                var data = [];
+                
+                for (var i = 1800; i<=1900; i++){
+                    data.push({date:new Date(i.toString()),n:120+i-i*i,n3:200+i});
+                    }
+                */
+                var yearTimeFormat = function(date){
+                    return (
+                            d3.timeFormat("%Y")
+                            )(date)
+                }
+                
+                $('#timeseries-chart').empty();
+                                         
+                var data = timeSeriesData;
+                console.log("timeSeriesData was ",timeSeriesData);
+                var chart = d3_timeseries()
+                .addSerie(data,{x:'date',y:'n'},{interpolate:'step-after',color:"#333",label:"percentile rank of centrality: "}).yscale.domain([0,100])
+                .xscale.tickFormat(yearTimeFormat)
+                .width(820);
+                
+                
+                chart('#timeseries-chart');
+                
+                });
+        </script>
         <script src="awesomplete.js" async></script>        
         
     </body>
